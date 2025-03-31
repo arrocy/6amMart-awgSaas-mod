@@ -150,9 +150,12 @@ class SMS_module
         $response = 'error';
         if (isset($config) && $config['status'] == 1) {
             $api_key = $config['api_key'];
+            $otp_template = $config['otp_template']  ?? 'Your OTP is: #OTP#';
+            $apiUrl = "https://2factor.in/API/V1/$api_key/SMS/$receiver/$otp/$otp_template";
+
             $curl = curl_init();
             curl_setopt_array($curl, array(
-                CURLOPT_URL => "https://2factor.in/API/V1/" . $api_key . "/SMS/" . $receiver . "/" . $otp . "",
+                CURLOPT_URL => $apiUrl,
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => "",
                 CURLOPT_MAXREDIRS => 10,
@@ -180,6 +183,7 @@ class SMS_module
         if (isset($config) && $config['status'] == 1) {
             $receiver = str_replace("+", "", $receiver);
             $curl = curl_init();
+            // $message = str_replace("#OTP#", $otp, $config['otp_template']);
             curl_setopt_array($curl, array(
                 CURLOPT_URL => "https://api.msg91.com/api/v5/otp?template_id=" . $config['template_id'] . "&mobile=" . $receiver . "&authkey=" . $config['auth_key'] . "",
                 CURLOPT_RETURNTRANSFER => true,
@@ -193,6 +197,35 @@ class SMS_module
                     "content-type: application/json"
                 ),
             ));
+
+            // curl_setopt_array($curl, [
+            //     CURLOPT_URL => "https://control.msg91.com/api/v5/flow",
+            //     CURLOPT_RETURNTRANSFER => true,
+            //     CURLOPT_ENCODING => "",
+            //     CURLOPT_MAXREDIRS => 10,
+            //     CURLOPT_TIMEOUT => 30,
+            //     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            //     CURLOPT_CUSTOMREQUEST => "POST",
+            //     CURLOPT_POSTFIELDS => json_encode([
+            //         "template_id" => $config['template_id'],
+            //         "short_url" => "0", // Set to "1" (On) or "0" (Off) as needed
+            //         "short_url_expiry" => "3600", // Replace with expiry time in seconds (optional)
+            //         "realTimeResponse" => "0",
+            //         "recipients" => [
+            //             [
+            //                 "mobiles" => $receiver,
+            //                 "OTP" => $otp,
+            //                 // "VAR1" => $var // Replace with your second variable value, if any
+            //             ]
+            //         ]
+            //     ]),
+            //     CURLOPT_HTTPHEADER => [
+            //         "accept: application/json",
+            //         "authkey: " . $config['auth_key'],
+            //         "content-type: application/json"
+            //     ],
+            // ]);
+
             $response = curl_exec($curl);
             $err = curl_error($curl);
             curl_close($curl);
