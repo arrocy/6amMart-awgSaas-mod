@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Models\EcommerceItemDetails;
+use App\Models\PharmacyItemDetails;
 use App\Models\PriorityList;
 use Carbon\Carbon;
 use App\Models\Item;
@@ -108,7 +110,7 @@ class BusinessSettingsController extends Controller
     {
         $list = ['category_list', 'popular_store', 'recommended_store', 'special_offer', 'popular_item', 'best_reviewed_item', 'item_campaign', 'latest_items', 'all_stores', 'category_sub_category_item', 'product_search', 'basic_medicine', 'common_condition', 'brand', 'brand_item', 'latest_stores','top_offer_near_me_stores'];
         foreach ($list as $item) {
-            BusinessSetting::updateOrInsert(['key' => $item . '_default_status'], [
+            Helpers::businessUpdateOrInsert(['key' => $item . '_default_status'], [
                 'value' => $request[$item . '_default_status'] ?? 0
             ]);
 
@@ -153,37 +155,37 @@ class BusinessSettingsController extends Controller
             return back();
         }
 
-        BusinessSetting::updateOrInsert(['key' => 'min_amount_to_pay_dm'], [
+        Helpers::businessUpdateOrInsert(['key' => 'min_amount_to_pay_dm'], [
             'value' => $request['min_amount_to_pay_dm']
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'cash_in_hand_overflow_delivery_man'], [
+        Helpers::businessUpdateOrInsert(['key' => 'cash_in_hand_overflow_delivery_man'], [
             'value' => $request['cash_in_hand_overflow_delivery_man'] ?? 0
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'dm_max_cash_in_hand'], [
+        Helpers::businessUpdateOrInsert(['key' => 'dm_max_cash_in_hand'], [
             'value' => $request['dm_max_cash_in_hand']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'dm_tips_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'dm_tips_status'], [
             'value' => $request['dm_tips_status']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'dm_maximum_orders'], [
+        Helpers::businessUpdateOrInsert(['key' => 'dm_maximum_orders'], [
             'value' => $request['dm_maximum_orders']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'canceled_by_deliveryman'], [
+        Helpers::businessUpdateOrInsert(['key' => 'canceled_by_deliveryman'], [
             'value' => $request['canceled_by_deliveryman']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'show_dm_earning'], [
+        Helpers::businessUpdateOrInsert(['key' => 'show_dm_earning'], [
             'value' => $request['show_dm_earning']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'toggle_dm_registration'], [
+        Helpers::businessUpdateOrInsert(['key' => 'toggle_dm_registration'], [
             'value' => $request['dm_self_registration']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'dm_picture_upload_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'dm_picture_upload_status'], [
             'value' => $request['dm_picture_upload_status']
         ]);
 
@@ -197,14 +199,14 @@ class BusinessSettingsController extends Controller
             Toastr::info(translate('messages.update_option_is_disable_for_demo'));
             return back();
         }
-        DB::table('business_settings')->updateOrInsert(['key' => 'websocket_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'websocket_status'], [
             'value' => $request['websocket_status']
         ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'websocket_url'], [
+        Helpers::businessUpdateOrInsert(['key' => 'websocket_url'], [
             'value' => $request['websocket_url']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'websocket_port'], [
+        Helpers::businessUpdateOrInsert(['key' => 'websocket_port'], [
             'value' => $request['websocket_port']
         ]);
 
@@ -220,35 +222,35 @@ class BusinessSettingsController extends Controller
         }
         if ($request['product_approval'] == 1) {
             if (!($request->Update_product_price || $request->Add_new_product || $request->Update_product_variation || $request->Update_anything_in_product_details)) {
-                DB::table('business_settings')->updateOrInsert(['key' => 'product_approval'], [
+                Helpers::businessUpdateOrInsert(['key' => 'product_approval'], [
                     'value' => 0
                 ]);
                 Toastr::error(translate('messages.need_to_check_minimum_1_criteria_for_product_approval'));
                 return back();
             }
         }
-        BusinessSetting::updateOrInsert(['key' => 'cash_in_hand_overflow_store'], [
+        Helpers::businessUpdateOrInsert(['key' => 'cash_in_hand_overflow_store'], [
             'value' => $request['cash_in_hand_overflow_store'] ?? 0
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'cash_in_hand_overflow_store_amount'], [
+        Helpers::businessUpdateOrInsert(['key' => 'cash_in_hand_overflow_store_amount'], [
             'value' => $request['cash_in_hand_overflow_store_amount']
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'min_amount_to_pay_store'], [
+        Helpers::businessUpdateOrInsert(['key' => 'min_amount_to_pay_store'], [
             'value' => $request['min_amount_to_pay_store']
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'store_review_reply'], [
+        Helpers::businessUpdateOrInsert(['key' => 'store_review_reply'], [
             'value' => $request['store_review_reply']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'canceled_by_store'], [
+        Helpers::businessUpdateOrInsert(['key' => 'canceled_by_store'], [
             'value' => $request['canceled_by_store']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'toggle_store_registration'], [
+        Helpers::businessUpdateOrInsert(['key' => 'toggle_store_registration'], [
             'value' => $request['store_self_registration']
         ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'product_approval'], [
+        Helpers::businessUpdateOrInsert(['key' => 'product_approval'], [
             'value' => $request['product_approval']
         ]);
 
@@ -259,15 +261,15 @@ class BusinessSettingsController extends Controller
             'Update_anything_in_product_details' => $request->Update_anything_in_product_details ?? 0,
         ];
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'product_approval_datas'], [
+        Helpers::businessUpdateOrInsert(['key' => 'product_approval_datas'], [
             'value' => json_encode($values)
         ]);
 
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'access_all_products'], [
+        Helpers::businessUpdateOrInsert(['key' => 'access_all_products'], [
             'value' => $request['access_all_products']
         ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'product_gallery'], [
+        Helpers::businessUpdateOrInsert(['key' => 'product_gallery'], [
             'value' => $request['product_gallery']
         ]);
 
@@ -282,40 +284,42 @@ class BusinessSettingsController extends Controller
             'home_delivery_status' => 'required_without:takeaway_status',
             'takeaway_status' => 'required_without:home_delivery_status',
         ]);
+        $key_datas=[
+            'order_cancelation_rate_limit_status' => 'order_cancelation_rate_limit_status',
+            'order_cancelation_rate_block_limit' => 'order_cancelation_rate_block_limit',
+            'order_cancelation_rate_warning_limit' => 'order_cancelation_rate_warning_limit',
+            'order_delivery_verification' => 'odc',
+            'schedule_order' => 'schedule_order',
+            'prescription_order_status' => 'prescription_order_status',
+            'home_delivery_status' => 'home_delivery_status',
+            'takeaway_status' => 'takeaway_status',
+            'schedule_order_slot_duration_time_format' => 'schedule_order_slot_duration_time_format',
+            'takeaway_status' => 'takeaway_status',
+            ];
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'order_delivery_verification'], [
-            'value' => $request['odc']
-        ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'schedule_order'], [
-            'value' => $request['schedule_order']
-        ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'prescription_order_status'], [
-            'value' => $request['prescription_order_status']
-        ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'home_delivery_status'], [
-            'value' => $request['home_delivery_status']
-        ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'takeaway_status'], [
-            'value' => $request['takeaway_status']
-        ]);
+        if($request->order_cancelation_rate_limit_status &&  $request->order_cancelation_rate_warning_limit >  $request->order_cancelation_rate_block_limit ){
+            Toastr::error(translate('messages.Providers_will_be_blocked_with_out_warning.Warning_rate_must_be_smaller'));
+            return back();
+        }
+        foreach($key_datas as $key => $request_key){
+                Helpers::businessUpdateOrInsert(['key' => $key], [
+                    'value' => $request->{$request_key} ?? 0
+                ]);
+            }
 
         $time = $request['schedule_order_slot_duration'];
         if ($request['schedule_order_slot_duration_time_format'] == 'hour') {
             $time = $request['schedule_order_slot_duration'] * 60;
         }
-        BusinessSetting::updateOrInsert(['key' => 'schedule_order_slot_duration'], [
+        Helpers::businessUpdateOrInsert(['key' => 'schedule_order_slot_duration'], [
             'value' => $time
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'schedule_order_slot_duration_time_format'], [
-            'value' => $request['schedule_order_slot_duration_time_format']
-        ]);
-
         $values = [];
         foreach (config('module.module_type') as $key => $value) {
             $values[$value] = $request[$value] ?? 0;
         }
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'extra_packaging_data'], [
+        Helpers::businessUpdateOrInsert(['key' => 'extra_packaging_data'], [
             'value' => json_encode($values)
         ]);
 
@@ -331,46 +335,46 @@ class BusinessSettingsController extends Controller
             return back();
         }
 
-        BusinessSetting::updateOrInsert(['key' => 'disbursement_type'], [
+        Helpers::businessUpdateOrInsert(['key' => 'disbursement_type'], [
             'value' => $request['disbursement_type']
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'store_disbursement_time_period'], [
+        Helpers::businessUpdateOrInsert(['key' => 'store_disbursement_time_period'], [
             'value' => $request['store_disbursement_time_period']
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'store_disbursement_week_start'], [
+        Helpers::businessUpdateOrInsert(['key' => 'store_disbursement_week_start'], [
             'value' => $request['store_disbursement_week_start']
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'store_disbursement_waiting_time'], [
+        Helpers::businessUpdateOrInsert(['key' => 'store_disbursement_waiting_time'], [
             'value' => $request['store_disbursement_waiting_time']
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'store_disbursement_create_time'], [
+        Helpers::businessUpdateOrInsert(['key' => 'store_disbursement_create_time'], [
             'value' => $request['store_disbursement_create_time']
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'store_disbursement_min_amount'], [
+        Helpers::businessUpdateOrInsert(['key' => 'store_disbursement_min_amount'], [
             'value' => $request['store_disbursement_min_amount']
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'dm_disbursement_time_period'], [
+        Helpers::businessUpdateOrInsert(['key' => 'dm_disbursement_time_period'], [
             'value' => $request['dm_disbursement_time_period']
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'dm_disbursement_week_start'], [
+        Helpers::businessUpdateOrInsert(['key' => 'dm_disbursement_week_start'], [
             'value' => $request['dm_disbursement_week_start']
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'dm_disbursement_waiting_time'], [
+        Helpers::businessUpdateOrInsert(['key' => 'dm_disbursement_waiting_time'], [
             'value' => $request['dm_disbursement_waiting_time']
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'dm_disbursement_create_time'], [
+        Helpers::businessUpdateOrInsert(['key' => 'dm_disbursement_create_time'], [
             'value' => $request['dm_disbursement_create_time']
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'dm_disbursement_min_amount'], [
+        Helpers::businessUpdateOrInsert(['key' => 'dm_disbursement_min_amount'], [
             'value' => $request['dm_disbursement_min_amount']
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'system_php_path'], [
+        Helpers::businessUpdateOrInsert(['key' => 'system_php_path'], [
             'value' => $request['system_php_path']
         ]);
 
@@ -378,20 +382,20 @@ class BusinessSettingsController extends Controller
             $data = self::generateCronCommand(disbursement_type: $request['disbursement_type']);
             $scriptPath = 'script.sh';
             exec('sh ' . $scriptPath);
-            BusinessSetting::updateOrInsert(['key' => 'store_disbursement_command'], [
+            Helpers::businessUpdateOrInsert(['key' => 'store_disbursement_command'], [
                 'value' => $data['storeCronCommand']
             ]);
-            BusinessSetting::updateOrInsert(['key' => 'dm_disbursement_command'], [
+            Helpers::businessUpdateOrInsert(['key' => 'dm_disbursement_command'], [
                 'value' => $data['dmCronCommand']
             ]);
             Toastr::success(translate('messages.successfully_updated_disbursement_functionality'));
             return back();
         } else {
             $data = self::generateCronCommand(disbursement_type: $request['disbursement_type']);
-            BusinessSetting::updateOrInsert(['key' => 'store_disbursement_command'], [
+            Helpers::businessUpdateOrInsert(['key' => 'store_disbursement_command'], [
                 'value' => $data['storeCronCommand']
             ]);
-            BusinessSetting::updateOrInsert(['key' => 'dm_disbursement_command'], [
+            Helpers::businessUpdateOrInsert(['key' => 'dm_disbursement_command'], [
                 'value' => $data['dmCronCommand']
             ]);
             if ($request['disbursement_type'] == 'automated') {
@@ -507,19 +511,19 @@ class BusinessSettingsController extends Controller
             return back();
         }
 
-        BusinessSetting::query()->updateOrInsert(['key' => 'country_picker_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'country_picker_status'], [
             'value' => $request['country_picker_status'] ? $request['country_picker_status'] : 0
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'business_name'], [
+        Helpers::businessUpdateOrInsert(['key' => 'business_name'], [
             'value' => $request['store_name']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'currency'], [
+        Helpers::businessUpdateOrInsert(['key' => 'currency'], [
             'value' => $request['currency']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'timezone'], [
+        Helpers::businessUpdateOrInsert(['key' => 'timezone'], [
             'value' => $request['timezone']
         ]);
 
@@ -544,117 +548,117 @@ class BusinessSettingsController extends Controller
         Config::set('currency', $request['currency']);
         Config::set('currency_symbol_position', $request['currency_symbol_position']);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'site_direction'], [
+        Helpers::businessUpdateOrInsert(['key' => 'site_direction'], [
             'value' => $request['site_direction']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'phone'], [
+        Helpers::businessUpdateOrInsert(['key' => 'phone'], [
             'value' => $request['phone']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'email_address'], [
+        Helpers::businessUpdateOrInsert(['key' => 'email_address'], [
             'value' => $request['email']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'address'], [
+        Helpers::businessUpdateOrInsert(['key' => 'address'], [
             'value' => $request['address']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'footer_text'], [
+        Helpers::businessUpdateOrInsert(['key' => 'footer_text'], [
             'value' => $request['footer_text']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'cookies_text'], [
+        Helpers::businessUpdateOrInsert(['key' => 'cookies_text'], [
             'value' => $request['cookies_text']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'minimum_shipping_charge'], [
+        Helpers::businessUpdateOrInsert(['key' => 'minimum_shipping_charge'], [
             'value' => $request['minimum_shipping_charge']
         ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'per_km_shipping_charge'], [
+        Helpers::businessUpdateOrInsert(['key' => 'per_km_shipping_charge'], [
             'value' => $request['per_km_shipping_charge']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'currency_symbol_position'], [
+        Helpers::businessUpdateOrInsert(['key' => 'currency_symbol_position'], [
             'value' => $request['currency_symbol_position']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'tax_included'], [
+        Helpers::businessUpdateOrInsert(['key' => 'tax_included'], [
             'value' => $request['tax_included']
         ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'order_confirmation_model'], [
+        Helpers::businessUpdateOrInsert(['key' => 'order_confirmation_model'], [
             'value' => $request['order_confirmation_model']
         ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'partial_payment_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'partial_payment_status'], [
             'value' => $request['partial_payment_status']
         ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'partial_payment_method'], [
+        Helpers::businessUpdateOrInsert(['key' => 'partial_payment_method'], [
             'value' => $request['partial_payment_method']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'tax'], [
+        Helpers::businessUpdateOrInsert(['key' => 'tax'], [
             'value' => $request['tax']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'admin_commission'], [
+        Helpers::businessUpdateOrInsert(['key' => 'admin_commission'], [
             'value' => $request['admin_commission']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'country'], [
+        Helpers::businessUpdateOrInsert(['key' => 'country'], [
             'value' => $request['country']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'default_location'], [
+        Helpers::businessUpdateOrInsert(['key' => 'default_location'], [
             'value' => json_encode(['lat' => $request['latitude'], 'lng' => $request['longitude']])
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'admin_order_notification'], [
+        Helpers::businessUpdateOrInsert(['key' => 'admin_order_notification'], [
             'value' => $request['admin_order_notification']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'order_notification_type'], [
+        Helpers::businessUpdateOrInsert(['key' => 'order_notification_type'], [
             'value' => $request['order_notification_type']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'free_delivery_over_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'free_delivery_over_status'], [
             'value' => $request['free_delivery_over_status'] ? $request['free_delivery_over_status'] : null
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'free_delivery_over'], [
+        Helpers::businessUpdateOrInsert(['key' => 'free_delivery_over'], [
             'value' => $request['free_delivery_over_status'] ? $request['free_delivery_over'] : null
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'additional_charge_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'additional_charge_status'], [
             'value' => $request['additional_charge_status'] ? $request['additional_charge_status'] : null
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'additional_charge_name'], [
+        Helpers::businessUpdateOrInsert(['key' => 'additional_charge_name'], [
             'value' => $request['additional_charge_name'] ? $request['additional_charge_name'] : null
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'additional_charge'], [
+        Helpers::businessUpdateOrInsert(['key' => 'additional_charge'], [
             'value' => $request['additional_charge'] ? $request['additional_charge'] : null
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'guest_checkout_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'guest_checkout_status'], [
             'value' => $request['guest_checkout_status'] ? $request['guest_checkout_status'] : 0
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'timeformat'], [
+        Helpers::businessUpdateOrInsert(['key' => 'timeformat'], [
             'value' => $request['time_format']
         ]);
 
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'toggle_veg_non_veg'], [
+        Helpers::businessUpdateOrInsert(['key' => 'toggle_veg_non_veg'], [
             'value' => $request['vnv']
         ]);
 
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'digit_after_decimal_point'], [
+        Helpers::businessUpdateOrInsert(['key' => 'digit_after_decimal_point'], [
             'value' => $request['digit_after_decimal_point']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'delivery_charge_comission'], [
+        Helpers::businessUpdateOrInsert(['key' => 'delivery_charge_comission'], [
             'value' => $request['admin_comission_in_delivery_charge']
         ]);
 // dd( $request['commission_business_model']);
@@ -666,11 +670,11 @@ class BusinessSettingsController extends Controller
 
         // For subscription Model
         if (isset($request->subscription_business_model) && !isset($request->commission_business_model)) {
-            DB::table('business_settings')->updateOrInsert(['key' => 'subscription_business_model'], [
+            Helpers::businessUpdateOrInsert(['key' => 'subscription_business_model'], [
                 'value' => $request['subscription_business_model'] ?? 1
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'commission_business_model'], [
+            Helpers::businessUpdateOrInsert(['key' => 'commission_business_model'], [
                 'value' => $request['commission_business_model'] ?? 0
             ]);
 
@@ -689,10 +693,10 @@ class BusinessSettingsController extends Controller
                 Toastr::warning(translate('You_need_to_switch_your_subscribers_to_commission_first'));
                 return back();
             }
-            DB::table('business_settings')->updateOrInsert(['key' => 'commission_business_model'], [
+            Helpers::businessUpdateOrInsert(['key' => 'commission_business_model'], [
                 'value' => $request['commission_business_model'] ?? 1
             ]);
-            DB::table('business_settings')->updateOrInsert(['key' => 'subscription_business_model'], [
+            Helpers::businessUpdateOrInsert(['key' => 'subscription_business_model'], [
                 'value' => $request['subscription_business_model'] ?? 0
             ]);
 
@@ -702,14 +706,14 @@ class BusinessSettingsController extends Controller
 
 
         } else {
-            DB::table('business_settings')->updateOrInsert(['key' => 'commission_business_model'], [
+            Helpers::businessUpdateOrInsert(['key' => 'commission_business_model'], [
                 'value' => $request['commission_business_model'] ?? 1
             ]);
             if (!isset($request->subscription_business_model) && StoreSubscription::where('status', 1)->count() > 0) {
                 Toastr::warning(translate('You_need_to_switch_your_subscribers_to_commission_first'));
                 return back();
             }
-            DB::table('business_settings')->updateOrInsert(['key' => 'subscription_business_model'], [
+            Helpers::businessUpdateOrInsert(['key' => 'subscription_business_model'], [
                 'value' => $request['subscription_business_model'] ?? 1
             ]);
         }
@@ -755,7 +759,7 @@ class BusinessSettingsController extends Controller
             Toastr::info(translate('messages.update_option_is_disable_for_demo'));
             return back();
         }
-        BusinessSetting::updateOrInsert(
+        Helpers::businessUpdateOrInsert(
             ['key' => 'mail_config'],
             [
                 'value' => json_encode([
@@ -786,7 +790,7 @@ class BusinessSettingsController extends Controller
 
         $data = $config ? json_decode($config['value'], true) : null;
 
-        BusinessSetting::updateOrInsert(
+        Helpers::businessUpdateOrInsert(
             ['key' => 'mail_config'],
             [
                 'value' => json_encode([
@@ -842,7 +846,7 @@ class BusinessSettingsController extends Controller
         if ($name == 'cash_on_delivery') {
             $payment = BusinessSetting::where('key', 'cash_on_delivery')->first();
             if (isset($payment) == false) {
-                DB::table('business_settings')->insert([
+                Helpers::businessInsert([
                     'key' => 'cash_on_delivery',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -851,7 +855,7 @@ class BusinessSettingsController extends Controller
                     'updated_at' => now(),
                 ]);
             } else {
-                DB::table('business_settings')->where(['key' => 'cash_on_delivery'])->update([
+                BusinessSetting::where(['key' => 'cash_on_delivery'])->update([
                     'key' => 'cash_on_delivery',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -862,7 +866,7 @@ class BusinessSettingsController extends Controller
         } elseif ($name == 'digital_payment') {
             $payment = BusinessSetting::where('key', 'digital_payment')->first();
             if (isset($payment) == false) {
-                DB::table('business_settings')->insert([
+                Helpers::businessInsert([
                     'key' => 'digital_payment',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -871,7 +875,7 @@ class BusinessSettingsController extends Controller
                     'updated_at' => now(),
                 ]);
             } else {
-                DB::table('business_settings')->where(['key' => 'digital_payment'])->update([
+                BusinessSetting::where(['key' => 'digital_payment'])->update([
                     'key' => 'digital_payment',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -882,7 +886,7 @@ class BusinessSettingsController extends Controller
         } elseif ($name == 'ssl_commerz_payment') {
             $payment = BusinessSetting::where('key', 'ssl_commerz_payment')->first();
             if (isset($payment) == false) {
-                DB::table('business_settings')->insert([
+                Helpers::businessInsert([
                     'key' => 'ssl_commerz_payment',
                     'value' => json_encode([
                         'status' => 1,
@@ -893,7 +897,7 @@ class BusinessSettingsController extends Controller
                     'updated_at' => now(),
                 ]);
             } else {
-                DB::table('business_settings')->where(['key' => 'ssl_commerz_payment'])->update([
+                BusinessSetting::where(['key' => 'ssl_commerz_payment'])->update([
                     'key' => 'ssl_commerz_payment',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -906,7 +910,7 @@ class BusinessSettingsController extends Controller
         } elseif ($name == 'razor_pay') {
             $payment = BusinessSetting::where('key', 'razor_pay')->first();
             if (isset($payment) == false) {
-                DB::table('business_settings')->insert([
+                Helpers::businessInsert([
                     'key' => 'razor_pay',
                     'value' => json_encode([
                         'status' => 1,
@@ -917,7 +921,7 @@ class BusinessSettingsController extends Controller
                     'updated_at' => now(),
                 ]);
             } else {
-                DB::table('business_settings')->where(['key' => 'razor_pay'])->update([
+                BusinessSetting::where(['key' => 'razor_pay'])->update([
                     'key' => 'razor_pay',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -930,7 +934,7 @@ class BusinessSettingsController extends Controller
         } elseif ($name == 'paypal') {
             $payment = BusinessSetting::where('key', 'paypal')->first();
             if (isset($payment) == false) {
-                DB::table('business_settings')->insert([
+                Helpers::businessInsert([
                     'key' => 'paypal',
                     'value' => json_encode([
                         'status' => 1,
@@ -942,7 +946,7 @@ class BusinessSettingsController extends Controller
                     'updated_at' => now(),
                 ]);
             } else {
-                DB::table('business_settings')->where(['key' => 'paypal'])->update([
+                BusinessSetting::where(['key' => 'paypal'])->update([
                     'key' => 'paypal',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -956,7 +960,7 @@ class BusinessSettingsController extends Controller
         } elseif ($name == 'stripe') {
             $payment = BusinessSetting::where('key', 'stripe')->first();
             if (isset($payment) == false) {
-                DB::table('business_settings')->insert([
+                Helpers::businessInsert([
                     'key' => 'stripe',
                     'value' => json_encode([
                         'status' => 1,
@@ -967,7 +971,7 @@ class BusinessSettingsController extends Controller
                     'updated_at' => now(),
                 ]);
             } else {
-                DB::table('business_settings')->where(['key' => 'stripe'])->update([
+                BusinessSetting::where(['key' => 'stripe'])->update([
                     'key' => 'stripe',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -980,7 +984,7 @@ class BusinessSettingsController extends Controller
         } elseif ($name == 'senang_pay') {
             $payment = BusinessSetting::where('key', 'senang_pay')->first();
             if (isset($payment) == false) {
-                DB::table('business_settings')->insert([
+                Helpers::businessInsert([
 
                     'key' => 'senang_pay',
                     'value' => json_encode([
@@ -993,7 +997,7 @@ class BusinessSettingsController extends Controller
                     'updated_at' => now(),
                 ]);
             } else {
-                DB::table('business_settings')->where(['key' => 'senang_pay'])->update([
+                BusinessSetting::where(['key' => 'senang_pay'])->update([
                     'key' => 'senang_pay',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -1007,7 +1011,7 @@ class BusinessSettingsController extends Controller
         } elseif ($name == 'paystack') {
             $payment = BusinessSetting::where('key', 'paystack')->first();
             if (isset($payment) == false) {
-                DB::table('business_settings')->insert([
+                Helpers::businessInsert([
                     'key' => 'paystack',
                     'value' => json_encode([
                         'status' => 1,
@@ -1020,7 +1024,7 @@ class BusinessSettingsController extends Controller
                     'updated_at' => now(),
                 ]);
             } else {
-                DB::table('business_settings')->where(['key' => 'paystack'])->update([
+                BusinessSetting::where(['key' => 'paystack'])->update([
                     'key' => 'paystack',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -1035,7 +1039,7 @@ class BusinessSettingsController extends Controller
         } elseif ($name == 'flutterwave') {
             $payment = BusinessSetting::where('key', 'flutterwave')->first();
             if (isset($payment) == false) {
-                DB::table('business_settings')->insert([
+                Helpers::businessInsert([
                     'key' => 'flutterwave',
                     'value' => json_encode([
                         'status' => 1,
@@ -1047,7 +1051,7 @@ class BusinessSettingsController extends Controller
                     'updated_at' => now(),
                 ]);
             } else {
-                DB::table('business_settings')->where(['key' => 'flutterwave'])->update([
+                BusinessSetting::where(['key' => 'flutterwave'])->update([
                     'key' => 'flutterwave',
                     'value' => json_encode([
                         'status' => $request['status'],
@@ -1059,7 +1063,7 @@ class BusinessSettingsController extends Controller
                 ]);
             }
         } elseif ($name == 'mercadopago') {
-            $payment = BusinessSetting::updateOrInsert(
+            $payment = Helpers::businessUpdateOrInsert(
                 ['key' => 'mercadopago'],
                 [
                     'value' => json_encode([
@@ -1071,7 +1075,7 @@ class BusinessSettingsController extends Controller
                 ]
             );
         } elseif ($name == 'paymob_accept') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'paymob_accept'], [
+            Helpers::businessUpdateOrInsert(['key' => 'paymob_accept'], [
                 'value' => json_encode([
                     'status' => $request['status'],
                     'api_key' => $request['api_key'],
@@ -1082,7 +1086,7 @@ class BusinessSettingsController extends Controller
                 'updated_at' => now()
             ]);
         } elseif ($name == 'liqpay') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'liqpay'], [
+            Helpers::businessUpdateOrInsert(['key' => 'liqpay'], [
                 'value' => json_encode([
                     'status' => $request['status'],
                     'public_key' => $request['public_key'],
@@ -1091,7 +1095,7 @@ class BusinessSettingsController extends Controller
                 'updated_at' => now()
             ]);
         } elseif ($name == 'paytm') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'paytm'], [
+            Helpers::businessUpdateOrInsert(['key' => 'paytm'], [
                 'value' => json_encode([
                     'status' => $request['status'],
                     'paytm_merchant_key' => $request['paytm_merchant_key'],
@@ -1102,7 +1106,7 @@ class BusinessSettingsController extends Controller
                 'updated_at' => now()
             ]);
         } elseif ($name == 'bkash') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'bkash'], [
+            Helpers::businessUpdateOrInsert(['key' => 'bkash'], [
                 'value' => json_encode([
                     'status' => $request['status'],
                     'api_key' => $request['api_key'],
@@ -1113,7 +1117,7 @@ class BusinessSettingsController extends Controller
                 'updated_at' => now()
             ]);
         } elseif ($name == 'paytabs') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'paytabs'], [
+            Helpers::businessUpdateOrInsert(['key' => 'paytabs'], [
                 'value' => json_encode([
                     'status' => $request['status'],
                     'profile_id' => $request['profile_id'],
@@ -1131,7 +1135,7 @@ class BusinessSettingsController extends Controller
     public function payment_config_update(Request $request)
     {
         if ($request->toggle_type) {
-            BusinessSetting::query()->updateOrInsert(['key' => $request->toggle_type], [
+            Helpers::businessUpdateOrInsert(['key' => $request->toggle_type], [
                 'value' => $request->toggle_type == 'offline_payment_status' ? $request?->status : json_encode(['status' => $request?->status]),
                 'updated_at' => now()
             ]);
@@ -1285,19 +1289,19 @@ class BusinessSettingsController extends Controller
 
         if ($request->type == 'user_app') {
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_minimum_version_android'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_minimum_version_android'], [
                 'value' => $request['app_minimum_version_android']
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_minimum_version_ios'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_minimum_version_ios'], [
                 'value' => $request['app_minimum_version_ios']
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_url_android'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_url_android'], [
                 'value' => $request['app_url_android']
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_url_ios'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_url_ios'], [
                 'value' => $request['app_url_ios']
             ]);
 
@@ -1329,16 +1333,16 @@ class BusinessSettingsController extends Controller
 
         if ($request->type == 'store_app') {
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_minimum_version_android_store'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_minimum_version_android_store'], [
                 'value' => $request['app_minimum_version_android_store']
             ]);
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_url_android_store'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_url_android_store'], [
                 'value' => $request['app_url_android_store']
             ]);
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_minimum_version_ios_store'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_minimum_version_ios_store'], [
                 'value' => $request['app_minimum_version_ios_store']
             ]);
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_url_ios_store'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_url_ios_store'], [
                 'value' => $request['app_url_ios_store']
             ]);
 
@@ -1349,16 +1353,16 @@ class BusinessSettingsController extends Controller
 
         if ($request->type == 'deliveryman_app') {
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_minimum_version_android_deliveryman'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_minimum_version_android_deliveryman'], [
                 'value' => $request['app_minimum_version_android_deliveryman']
             ]);
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_url_android_deliveryman'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_url_android_deliveryman'], [
                 'value' => $request['app_url_android_deliveryman']
             ]);
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_minimum_version_ios_deliveryman'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_minimum_version_ios_deliveryman'], [
                 'value' => $request['app_minimum_version_ios_deliveryman']
             ]);
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_url_ios_deliveryman'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_url_ios_deliveryman'], [
                 'value' => $request['app_url_ios_deliveryman']
             ]);
 
@@ -1377,7 +1381,7 @@ class BusinessSettingsController extends Controller
         }
 
         if ($tab == 'text') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'landing_page_text'], [
+            Helpers::businessUpdateOrInsert(['key' => 'landing_page_text'], [
                 'value' => json_encode([
                     'header_title_1' => $request['header_title_1'],
                     'header_title_2' => $request['header_title_2'],
@@ -1408,7 +1412,7 @@ class BusinessSettingsController extends Controller
             ]);
             Toastr::success(translate('messages.landing_page_text_updated'));
         } else if ($tab == 'links') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'landing_page_links'], [
+            Helpers::businessUpdateOrInsert(['key' => 'landing_page_links'], [
                 'value' => json_encode([
                     'app_url_android_status' => $request['app_url_android_status'],
                     'app_url_android' => $request['app_url_android'],
@@ -1439,7 +1443,7 @@ class BusinessSettingsController extends Controller
                 'title' => $request->speciality_title
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'speciality'], [
+            Helpers::businessUpdateOrInsert(['key' => 'speciality'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.landing_page_speciality_updated'));
@@ -1466,7 +1470,7 @@ class BusinessSettingsController extends Controller
                 $request->deliveryman_banner_bg->move(public_path('assets/landing/image'), $imageName);
                 $data['deliveryman_banner_bg'] = $imageName;
             }
-            DB::table('business_settings')->updateOrInsert(['key' => 'join_as_images'], [
+            Helpers::businessUpdateOrInsert(['key' => 'join_as_images'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.landing_page_image_updated'));
@@ -1490,13 +1494,13 @@ class BusinessSettingsController extends Controller
                 $data['description'] = $request->description;
             }
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'download_app_section'], [
+            Helpers::businessUpdateOrInsert(['key' => 'download_app_section'], [
                 'value' => json_encode($data)
             ]);
 
             Toastr::success(translate('messages.landing_page_download_app_section_updated'));
         } else if ($tab == 'counter-section') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'counter_section'], [
+            Helpers::businessUpdateOrInsert(['key' => 'counter_section'], [
                 'value' => json_encode([
                     'app_download_count_numbers' => $request['app_download_count_numbers'],
                     'seller_count_numbers' => $request['seller_count_numbers'],
@@ -1526,7 +1530,7 @@ class BusinessSettingsController extends Controller
                 'sub_title' => $request->sub_title,
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'promotion_banner'], [
+            Helpers::businessUpdateOrInsert(['key' => 'promotion_banner'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.landing_page_promotion_banner_updated'));
@@ -1559,7 +1563,7 @@ class BusinessSettingsController extends Controller
                 'img' => $imageName ?? $preImageName
             ];
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'module_section'], [
+            Helpers::businessUpdateOrInsert(['key' => 'module_section'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.landing_page_module_section_updated'));
@@ -1580,7 +1584,7 @@ class BusinessSettingsController extends Controller
                 'feature_description' => $request->feature_description
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'feature'], [
+            Helpers::businessUpdateOrInsert(['key' => 'feature'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.landing_page_feature_updated'));
@@ -1608,7 +1612,7 @@ class BusinessSettingsController extends Controller
                 'detail' => $request->review,
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'testimonial'], [
+            Helpers::businessUpdateOrInsert(['key' => 'testimonial'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.landing_page_testimonial_updated'));
@@ -1661,12 +1665,12 @@ class BusinessSettingsController extends Controller
                 $data['contact_us_image'] = $imageName;
             }
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'landing_page_images'], [
+            Helpers::businessUpdateOrInsert(['key' => 'landing_page_images'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.landing_page_image_updated'));
         } else if ($tab == 'background-change') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'backgroundChange'], [
+            Helpers::businessUpdateOrInsert(['key' => 'backgroundChange'], [
                 'value' => json_encode([
                     'primary_1_hex' => $request['header-bg'],
                     'primary_1_rgb' => Helpers::hex_to_rbg($request['header-bg']),
@@ -1698,7 +1702,7 @@ class BusinessSettingsController extends Controller
                 $request->mobile_app_section_image->move(public_path('assets/landing/image'), $imageName);
                 $data['mobile_app_section_image'] = ['img' => $imageName, 'storage' => Helpers::getDisk()];
             }
-            DB::table('business_settings')->updateOrInsert(['key' => 'web_app_landing_page_settings'], [
+            Helpers::businessUpdateOrInsert(['key' => 'web_app_landing_page_settings'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.web_app_landing_page_settings'));
@@ -1726,7 +1730,7 @@ class BusinessSettingsController extends Controller
                 'hero_section_slogan' => $request->hero_section_slogan ?? $hero_section['hero_section_slogan'],
                 'hero_section_short_description' => $request->hero_section_short_description ?? $hero_section['hero_section_short_description'],
             ];
-            DB::table('business_settings')->updateOrInsert(['key' => 'hero_section'], [
+            Helpers::businessUpdateOrInsert(['key' => 'hero_section'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.landing_page_hero_section_updated'));
@@ -1885,7 +1889,7 @@ class BusinessSettingsController extends Controller
                 'link' => $request->link
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'app_download_button'], [
+            Helpers::businessUpdateOrInsert(['key' => 'app_download_button'], [
                 'value' => json_encode($data)
             ]);
             Toastr::success(translate('messages.app_download_button_updated'));
@@ -1954,7 +1958,7 @@ class BusinessSettingsController extends Controller
             "exchange_rate" => $request['exchange_rate'],
         ]);
         Toastr::success(translate('messages.currency_updated_successfully'));
-        return redirect('store-panel/business-settings/currency-add');
+        return redirect('vendor-panel/business-settings/currency-add');
     }
 
     public function currency_delete($id)
@@ -2116,17 +2120,18 @@ class BusinessSettingsController extends Controller
 
     public function about_us_update(Request $request)
     {
-        // dd($request->all());
         $this->update_data($request, 'about_us');
         $this->update_data($request, 'about_title');
         Toastr::success(translate('messages.about_us_updated'));
         return back();
     }
 
-    public function fcm_index()
+    public function fcm_index(Request $request)
     {
-        $fcm_credentials = Helpers::get_business_settings('fcm_credentials');
-        return view('admin-views.business-settings.fcm-index', compact('fcm_credentials'));
+        abort_if($request?->module_type == 'rental' && !addon_published_status('Rental'), 404);
+        return view($request->module_type == 'rental' && addon_published_status('Rental')
+            ? 'admin-views.business-settings.fcm-index-rental'
+            : 'admin-views.business-settings.fcm-index');
     }
 
     public function fcm_config()
@@ -2148,19 +2153,15 @@ class BusinessSettingsController extends Controller
 
     public function update_fcm(Request $request)
     {
-        DB::table('business_settings')->updateOrInsert(['key' => 'push_notification_service_file_content'], [
+        Helpers::businessUpdateOrInsert(['key' => 'push_notification_service_file_content'], [
             'value' => $request['push_notification_service_file_content'],
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'fcm_project_id'], [
+        Helpers::businessUpdateOrInsert(['key' => 'fcm_project_id'], [
             'value' => $request['projectId']
         ]);
 
-//        DB::table('business_settings')->updateOrInsert(['key' => 'push_notification_key'], [
-//            'value' => $request['push_notification_key']
-//        ]);
-
-        DB::table('business_settings')->updateOrInsert(['key' => 'arrocyWG'], [
+        Helpers::businessUpdateOrInsert(['key' => 'arrocyWG'], [
             'value' => json_encode([
                 'status' => $request['arrocyWG_status'],
                 'nodeurl' => $request['arrocyWG_nodeurl'],
@@ -2168,7 +2169,7 @@ class BusinessSettingsController extends Controller
                 'otp_template' => $request['arrocyWG_otp_template'],
             ]),
         ]);
-        DB::table('business_settings')->updateOrInsert(['key' => 'fcm_credentials'], [
+        Helpers::businessUpdateOrInsert(['key' => 'fcm_credentials'], [
             'value' => json_encode([
                 'apiKey' => $request->apiKey,
                 'authDomain' => $request->authDomain,
@@ -2561,6 +2562,46 @@ class BusinessSettingsController extends Controller
         Toastr::success(translate('messages.message_updated'));
         return back();
     }
+    public function update_fcm_messages_rental(Request $request)
+    {
+            $messageKeys = [
+                'trip_pending_message' => 'trip_pending_message',
+                'trip_confirm_message' => 'trip_confirm_message',
+                'trip_ongoing_message' => 'trip_ongoing_message',
+                'trip_complete_message' => 'trip_complete_message',
+                'trip_cancel_message' => 'trip_cancel_message',
+            ];
+
+            foreach ($messageKeys as $requestKey => $notificationKey) {
+
+                $notification = NotificationMessage::firstOrNew([
+                    'module_type' => 'rental',
+                    'key' => $notificationKey,
+                ]);
+
+
+                $notification->message = $request[$requestKey][array_search('en', $request->lang)];
+                $notification->status = isset($request[$requestKey . '_status']) && $request[$requestKey . '_status'] == 1 ? 1 : 0;
+                $notification->save();
+
+                foreach ($request->lang as $index => $locale) {
+                    if (!empty($request[$requestKey][$index])) {
+                        Translation::updateOrInsert(
+                            [
+                                'translationable_type' => NotificationMessage::class,
+                                'translationable_id' => $notification->id,
+                                'locale' => $locale,
+                                'key' => $notificationKey,
+                            ],
+                            ['value' => $request[$requestKey][$index]]
+                        );
+                    }
+                }
+            }
+
+        Toastr::success(translate('messages.message_updated'));
+        return back();
+    }
 
 
     public function location_setup(Request $request)
@@ -2581,11 +2622,11 @@ class BusinessSettingsController extends Controller
 
     public function config_update(Request $request)
     {
-        DB::table('business_settings')->updateOrInsert(['key' => 'map_api_key'], [
+        Helpers::businessUpdateOrInsert(['key' => 'map_api_key'], [
             'value' => $request['map_api_key']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'map_api_key_server'], [
+        Helpers::businessUpdateOrInsert(['key' => 'map_api_key_server'], [
             'value' => $request['map_api_key_server']
         ]);
 
@@ -2595,7 +2636,7 @@ class BusinessSettingsController extends Controller
 
     public function toggle_settings($key, $value)
     {
-        DB::table('business_settings')->updateOrInsert(['key' => $key], [
+        Helpers::businessUpdateOrInsert(['key' => $key], [
             'value' => $value
         ]);
 
@@ -2642,8 +2683,9 @@ class BusinessSettingsController extends Controller
                 array_push($credential_array, $data);
             }
         }
-        BusinessSetting::where('key', 'social_login')->update([
-            'value' => $credential_array
+
+        Helpers::businessUpdateOrInsert(['key' => 'social_login'], [
+            'value' =>$credential_array
         ]);
 
         Toastr::success(translate('messages.credential_updated', ['service' => $service]));
@@ -2756,35 +2798,35 @@ class BusinessSettingsController extends Controller
         }
 
 
-        BusinessSetting::updateOrInsert(['key' => 'manual_login_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'manual_login_status'], [
             'value' => $request['manual_login_status'] ? 1 : 0
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'otp_login_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'otp_login_status'], [
             'value' => $request['otp_login_status'] ? 1 : 0
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'social_login_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'social_login_status'], [
             'value' => $request['social_login_status'] ? 1 : 0
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'google_login_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'google_login_status'], [
             'value' => $request['social_login_status']?($request['google_login_status'] ? 1 : 0):0
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'facebook_login_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'facebook_login_status'], [
             'value' => $request['social_login_status']?($request['facebook_login_status'] ? 1 : 0):0
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'apple_login_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'apple_login_status'], [
             'value' => $request['social_login_status']?($request['apple_login_status'] ? 1 : 0):0
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'email_verification_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'email_verification_status'], [
             'value' => $request['email_verification_status'] ? 1 : 0
         ]);
 
-        BusinessSetting::updateOrInsert(['key' => 'phone_verification_status'], [
+        Helpers::businessUpdateOrInsert(['key' => 'phone_verification_status'], [
             'value' => $request['phone_verification_status'] ? 1 : 0
         ]);
 
@@ -2800,7 +2842,7 @@ class BusinessSettingsController extends Controller
 
     public function recaptcha_update(Request $request)
     {
-        DB::table('business_settings')->updateOrInsert(['key' => 'recaptcha'], [
+        Helpers::businessUpdateOrInsert(['key' => 'recaptcha'], [
             'key' => 'recaptcha',
             'value' => json_encode([
                 'status' => $request['status'],
@@ -2839,10 +2881,10 @@ class BusinessSettingsController extends Controller
             Toastr::warning(translate('phone_verification_status_is_enabled_in_login_setup._First_disable_from_login_setup.'));
             return redirect()->back();
         }
-        BusinessSetting::updateOrInsert(['key' => 'firebase_otp_verification'], [
+        Helpers::businessUpdateOrInsert(['key' => 'firebase_otp_verification'], [
             'value' => $request['firebase_otp_verification'] ?? 0
         ]);
-        BusinessSetting::updateOrInsert(['key' => 'firebase_web_api_key'], [
+        Helpers::businessUpdateOrInsert(['key' => 'firebase_web_api_key'], [
             'value' => $request['firebase_web_api_key']
         ]);
 
@@ -2857,13 +2899,13 @@ class BusinessSettingsController extends Controller
     public function storage_connection_update(Request $request, $name)
     {
         if ($name == 'local_storage') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'local_storage'], [
+            Helpers::businessUpdateOrInsert(['key' => 'local_storage'], [
                 'key' => 'local_storage',
                 'value' => $request->status ?? 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            DB::table('business_settings')->updateOrInsert(['key' => '3rd_party_storage'], [
+            Helpers::businessUpdateOrInsert(['key' => '3rd_party_storage'], [
                 'key' => '3rd_party_storage',
                 'value' => $request->status == '1' ? 0 : 1,
                 'created_at' => now(),
@@ -2871,13 +2913,13 @@ class BusinessSettingsController extends Controller
             ]);
         }
         if ($name == '3rd_party_storage') {
-            DB::table('business_settings')->updateOrInsert(['key' => '3rd_party_storage'], [
+            Helpers::businessUpdateOrInsert(['key' => '3rd_party_storage'], [
                 'key' => '3rd_party_storage',
                 'value' => $request->status ?? 0,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
-            DB::table('business_settings')->updateOrInsert(['key' => 'local_storage'], [
+            Helpers::businessUpdateOrInsert(['key' => 'local_storage'], [
                 'key' => 'local_storage',
                 'value' => $request->status == '1' ? 0 : 1,
                 'created_at' => now(),
@@ -2885,7 +2927,7 @@ class BusinessSettingsController extends Controller
             ]);
         }
         if ($name == 'storage_connection') {
-            DB::table('business_settings')->updateOrInsert(['key' => 's3_credential'], [
+            Helpers::businessUpdateOrInsert(['key' => 's3_credential'], [
                 'key' => 's3_credential',
                 'value' => json_encode([
                     'key' => $request['key'],
@@ -2986,11 +3028,11 @@ class BusinessSettingsController extends Controller
             return response()->json();
         }
         if ($request->status == 1) {
-            DB::table('business_settings')->updateOrInsert(['key' => 'site_direction'], [
+            Helpers::businessUpdateOrInsert(['key' => 'site_direction'], [
                 'value' => 'ltr'
             ]);
         } else {
-            DB::table('business_settings')->updateOrInsert(['key' => 'site_direction'], [
+            Helpers::businessUpdateOrInsert(['key' => 'site_direction'], [
                 'value' => 'rtl'
             ]);
         }
@@ -3350,7 +3392,7 @@ class BusinessSettingsController extends Controller
                 }
             }
 
-            DB::table('data_settings')->updateOrInsert(['key' => 'fixed_link', 'type' => 'admin_landing_page'], [
+            Helpers::dataUpdateOrInsert(['key' => 'fixed_link', 'type' => 'admin_landing_page'], [
                 'value' => json_encode([
                     'web_app_url_status' => $request['web_app_url_status'],
                     'web_app_url' => $request['web_app_url'],
@@ -3681,7 +3723,7 @@ class BusinessSettingsController extends Controller
             }
 
 
-            DB::table('data_settings')->updateOrInsert(['key' => 'seller_app_earning_links', 'type' => 'admin_landing_page'], [
+            Helpers::dataUpdateOrInsert(['key' => 'seller_app_earning_links', 'type' => 'admin_landing_page'], [
                 'value' => json_encode([
                     'playstore_url_status' => $request['playstore_url_status'],
                     'playstore_url' => $request['playstore_url'],
@@ -3710,7 +3752,7 @@ class BusinessSettingsController extends Controller
                 return back();
             }
 
-            DB::table('data_settings')->updateOrInsert(['key' => 'dm_app_earning_links', 'type' => 'admin_landing_page'], [
+            Helpers::dataUpdateOrInsert(['key' => 'dm_app_earning_links', 'type' => 'admin_landing_page'], [
                 'value' => json_encode([
                     'playstore_url_status' => $request['playstore_url_status'],
                     'playstore_url' => $request['playstore_url'],
@@ -3891,7 +3933,7 @@ class BusinessSettingsController extends Controller
                 }
             }
 
-            DB::table('data_settings')->updateOrInsert(['key' => 'download_user_app_links', 'type' => 'admin_landing_page'], [
+            Helpers::dataUpdateOrInsert(['key' => 'download_user_app_links', 'type' => 'admin_landing_page'], [
                 'value' => json_encode([
                     'playstore_url_status' => $request['playstore_url_status'],
                     'playstore_url' => $request['playstore_url'],
@@ -3903,7 +3945,7 @@ class BusinessSettingsController extends Controller
 
             Toastr::success(translate('messages.download_app_section_updated'));
         } else if ($tab == 'download-counter-section') {
-            DB::table('data_settings')->updateOrInsert(['key' => 'counter_section', 'type' => 'admin_landing_page'], [
+            Helpers::dataUpdateOrInsert(['key' => 'counter_section', 'type' => 'admin_landing_page'], [
                 'value' => json_encode([
                     'app_download_count_numbers' => $request['app_download_count_numbers'],
                     'seller_count_numbers' => $request['seller_count_numbers'],
@@ -4058,22 +4100,22 @@ class BusinessSettingsController extends Controller
                 }
             }
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'opening_time'], [
+            Helpers::businessUpdateOrInsert(['key' => 'opening_time'], [
                 'value' => $request['opening_time']
             ]);
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'closing_time'], [
+            Helpers::businessUpdateOrInsert(['key' => 'closing_time'], [
                 'value' => $request['closing_time']
             ]);
 
             if ($request->opening_day == $request->closing_day) {
                 Toastr::error(translate('messages.the_start_day_and_end_day_is_same'));
             } else {
-                DB::table('business_settings')->updateOrInsert(['key' => 'opening_day'], [
+                Helpers::businessUpdateOrInsert(['key' => 'opening_day'], [
                     'value' => $request['opening_day']
                 ]);
 
-                DB::table('business_settings')->updateOrInsert(['key' => 'closing_day'], [
+                Helpers::businessUpdateOrInsert(['key' => 'closing_day'], [
                     'value' => $request['closing_day']
                 ]);
             }
@@ -4180,14 +4222,14 @@ class BusinessSettingsController extends Controller
                 }
             }
 
-            DB::table('data_settings')->updateOrInsert(['type' => 'admin_landing_page','key' => 'available_zone_status'], [
+            Helpers::dataUpdateOrInsert(['type' => 'admin_landing_page','key' => 'available_zone_status'], [
                 'value' => $request['available_zone_status']
             ]);
 
 
             Toastr::success(translate('messages.available_zone_section_updated'));
         } elseif ($tab == 'background-color') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'backgroundChange'], [
+            Helpers::businessUpdateOrInsert(['key' => 'backgroundChange'], [
                 'value' => json_encode([
                     'primary_1_hex' => $request['header-bg'],
                     'primary_1_rgb' => Helpers::hex_to_rbg($request['header-bg']),
@@ -4660,7 +4702,7 @@ class BusinessSettingsController extends Controller
                 }
             }
 
-            DB::table('data_settings')->updateOrInsert(['key' => 'download_user_app_links', 'type' => 'react_landing_page'], [
+            Helpers::dataUpdateOrInsert(['key' => 'download_user_app_links', 'type' => 'react_landing_page'], [
                 'value' => json_encode([
                     'playstore_url_status' => $request['playstore_url_status'],
                     'playstore_url' => $request['playstore_url'],
@@ -4771,7 +4813,7 @@ class BusinessSettingsController extends Controller
                 }
             }
 
-            DB::table('data_settings')->updateOrInsert(['type' => 'react_landing_page','key' => 'available_zone_status'], [
+            Helpers::dataUpdateOrInsert(['type' => 'react_landing_page','key' => 'available_zone_status'], [
                 'value' => $request['available_zone_status']
             ]);
 
@@ -5276,7 +5318,7 @@ class BusinessSettingsController extends Controller
                 }
             }
 
-            DB::table('data_settings')->updateOrInsert(['key' => 'download_business_app_links', 'type' => 'react_landing_page'], [
+            Helpers::dataUpdateOrInsert(['key' => 'download_business_app_links', 'type' => 'react_landing_page'], [
                 'value' => json_encode([
                     'seller_playstore_url_status' => $request['seller_playstore_url_status'],
                     'seller_playstore_url' => $request['seller_playstore_url'],
@@ -6014,7 +6056,7 @@ class BusinessSettingsController extends Controller
                 }
             }
 
-            DB::table('data_settings')->updateOrInsert(['type' => 'flutter_landing_page','key' => 'available_zone_status'], [
+            Helpers::dataUpdateOrInsert(['type' => 'flutter_landing_page','key' => 'available_zone_status'], [
                 'value' => $request['available_zone_status']
             ]);
 
@@ -6105,7 +6147,7 @@ class BusinessSettingsController extends Controller
                 }
             }
 
-            DB::table('data_settings')->updateOrInsert(['key' => 'download_user_app_links', 'type' => 'flutter_landing_page'], [
+            Helpers::dataUpdateOrInsert(['key' => 'download_user_app_links', 'type' => 'flutter_landing_page'], [
                 'value' => json_encode([
                     'playstore_url_status' => $request['playstore_url_status'],
                     'playstore_url' => $request['playstore_url'],
@@ -7125,172 +7167,172 @@ class BusinessSettingsController extends Controller
         }
 
         if ($tab == 'place-order') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'place_order_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'place_order_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'forgot-password') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'forget_password_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'forget_password_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'store-registration') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'store_registration_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'store_registration_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'dm-registration') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'dm_registration_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'dm_registration_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'registration') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'registration_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'registration_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'approve') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'approve_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'approve_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'deny') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'deny_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'deny_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'withdraw-request') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'withdraw_request_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'withdraw_request_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'withdraw-approve') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'withdraw_approve_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'withdraw_approve_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'withdraw-deny') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'withdraw_deny_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'withdraw_deny_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'campaign-request') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'campaign_request_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'campaign_request_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'campaign-approve') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'campaign_approve_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'campaign_approve_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'campaign-deny') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'campaign_deny_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'campaign_deny_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'refund-request') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'refund_request_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'refund_request_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'login') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'login_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'login_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'suspend') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'suspend_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'suspend_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'cash-collect') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'cash_collect_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'cash_collect_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'registration-otp') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'registration_otp_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'registration_otp_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'login-otp') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'login_otp_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'login_otp_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'order-verification') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'order_verification_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'order_verification_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'refund-request-deny') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'refund_request_deny_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'refund_request_deny_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'add-fund') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'add_fund_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'add_fund_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'refund-order') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'refund_order_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'refund_order_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'product-deny') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'product_deny_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'product_deny_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'product-approved') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'product_approve_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'product_approve_mail_status_' . $type], [
                 'value' => $status
             ]);
 
         } else if ($tab == 'offline-payment-deny') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'offline_payment_deny_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'offline_payment_deny_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'offline-payment-approve') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'offline_payment_approve_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'offline_payment_approve_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'pos-registration') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'pos_registration_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'pos_registration_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'unsuspend') {
-            BusinessSetting::query()->updateOrInsert(['key' => 'unsuspend_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'unsuspend_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'subscription-successful') {
-            BusinessSetting::query()->updateOrInsert(['key' => 'subscription_successful_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'subscription_successful_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'subscription-renew') {
-            BusinessSetting::query()->updateOrInsert(['key' => 'subscription_renew_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'subscription_renew_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'subscription-shift') {
-            BusinessSetting::query()->updateOrInsert(['key' => 'subscription_shift_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'subscription_shift_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'subscription-cancel') {
-            BusinessSetting::query()->updateOrInsert(['key' => 'subscription_cancel_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'subscription_cancel_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'subscription-deadline') {
-            BusinessSetting::query()->updateOrInsert(['key' => 'subscription_deadline_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'subscription_deadline_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'subscription-plan_upadte') {
-            BusinessSetting::query()->updateOrInsert(['key' => 'subscription_plan_upadte_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'subscription_plan_upadte_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'new-advertisement') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'new_advertisement_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'new_advertisement_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'update-advertisement') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'update_advertisement_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'update_advertisement_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'advertisement-resume') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'advertisement_resume_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'advertisement_resume_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'advertisement-approved') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'advertisement_approved_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'advertisement_approved_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'advertisement-create') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'advertisement_create_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'advertisement_create_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'advertisement-pause') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'advertisement_pause_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'advertisement_pause_mail_status_' . $type], [
                 'value' => $status
             ]);
         } else if ($tab == 'advertisement-deny') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'advertisement_deny_mail_status_' . $type], [
+            Helpers::businessUpdateOrInsert(['key' => 'advertisement_deny_mail_status_' . $type], [
                 'value' => $status
             ]);
         }
@@ -7405,7 +7447,7 @@ class BusinessSettingsController extends Controller
             'react_domain.required' => translate('messages.doamain_is_required'),
         ]);
         if (Helpers::activation_submit($request['react_license_code'])) {
-            DB::table('business_settings')->updateOrInsert(['key' => 'react_setup'], [
+            Helpers::businessUpdateOrInsert(['key' => 'react_setup'], [
                 'value' => json_encode([
                     'status' => 1,
                     'react_license_code' => $request['react_license_code'],
@@ -7418,7 +7460,7 @@ class BusinessSettingsController extends Controller
             return back();
         } elseif (Helpers::react_activation_check($request->react_domain, $request->react_license_code)) {
 
-            DB::table('business_settings')->updateOrInsert(['key' => 'react_setup'], [
+            Helpers::businessUpdateOrInsert(['key' => 'react_setup'], [
                 'value' => json_encode([
                     'status' => 1,
                     'react_license_code' => $request['react_license_code'],
@@ -7452,7 +7494,7 @@ class BusinessSettingsController extends Controller
             return response()->json(['status' => 'error', 'message' => $error[0]['message']]);
         }
 
-        DB::table('business_settings')->updateOrInsert(['key' => 'landing_integration_type'], [
+        Helpers::businessUpdateOrInsert(['key' => 'landing_integration_type'], [
             'value' => $request['landing_integration_via']
         ]);
         $status = 'success';
@@ -7491,7 +7533,7 @@ class BusinessSettingsController extends Controller
         }
 
         if ($request->landing_integration_via == 'url') {
-            DB::table('business_settings')->updateOrInsert(['key' => 'landing_page_custom_url'], [
+            Helpers::businessUpdateOrInsert(['key' => 'landing_page_custom_url'], [
                 'value' => $request['redirect_url']
             ]);
 
@@ -7561,8 +7603,7 @@ class BusinessSettingsController extends Controller
             $item->save();
             $item->tags()->sync(json_decode($data->tag_ids));
             if ($item->module->module_type == 'pharmacy') {
-                DB::table('pharmacy_item_details')
-                    ->updateOrInsert(
+                PharmacyItemDetails::updateOrInsert(
                         ['item_id' => $item->id],
                         [
                             'common_condition_id' => $data->condition_id,
@@ -7572,8 +7613,7 @@ class BusinessSettingsController extends Controller
                     );
             }
             if ($item->module->module_type == 'ecommerce') {
-                DB::table('ecommerce_item_details')
-                    ->updateOrInsert(
+                EcommerceItemDetails::updateOrInsert(
                         ['item_id' => $item->id],
                         [
                             'brand_id' => $data->brand_id,
@@ -7596,16 +7636,26 @@ class BusinessSettingsController extends Controller
     public function notification_setup(Request $request)
     {
 
+        abort_if(!addon_published_status('Rental') && $request?->module == 'rental',404 );
+
         if (NotificationSetting::count() == 0) {
             Helpers::notificationDataSetup();
         }
-            Helpers::addNewAdminNotificationSetupDataSetup();
-        $data = NotificationSetting::
-        when($request?->type == null || $request?->type == 'admin', function ($query) {
+        if(addon_published_status('Rental') && $request?->module == 'rental'){
+            Helpers::getRentalAdminNotificationSetupDatasetup();
+        }
+
+        Helpers::addNewAdminNotificationSetupDataSetup();
+
+        $data = NotificationSetting::where('module_type', $request?->module == 'rental' ? 'rental'  : 'all')
+        ->when($request?->type == null || $request?->type == 'admin', function ($query) {
             $query->where('type', 'admin');
         })
             ->when($request?->type == 'store', function ($query) {
                 $query->where('type', 'store');
+            })
+            ->when($request?->type == 'provider', function ($query) {
+                $query->where('type', 'provider');
             })
             ->when($request?->type == 'customers', function ($query) {
                 $query->where('type', 'customer');
@@ -7616,7 +7666,8 @@ class BusinessSettingsController extends Controller
 
 
         $business_name = BusinessSetting::where('key', 'business_name')->first()?->value;
-        return view('admin-views.business-settings.notification_setup', compact('business_name', 'data'));
+
+        return view(  $request?->module == 'rental' ? 'admin-views.business-settings.notification_setup_rental' : 'admin-views.business-settings.notification_setup', compact('business_name', 'data'));
 
     }
 
