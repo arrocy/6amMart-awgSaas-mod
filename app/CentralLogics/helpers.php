@@ -1153,7 +1153,7 @@ class Helpers
     {
         $config = self::get_business_settings('push_notification_service_file_content');
         $key = (array)$config;
-        if($key['project_id']){
+        if(data_get($key,'project_id')){
             $url = 'https://fcm.googleapis.com/v1/projects/'.$key['project_id'].'/messages:send';
             $headers = [
                 'Authorization' => 'Bearer ' . self::getAccessToken($key),
@@ -4304,6 +4304,11 @@ class Helpers
     public static function getActivePaymentGateways(){
 
         if (!Schema::hasTable('addon_settings')) {
+            return [];
+        }
+
+        $digital_payment=\App\CentralLogics\Helpers::get_business_settings('digital_payment');
+        if($digital_payment && $digital_payment['status']==0){
             return [];
         }
 
