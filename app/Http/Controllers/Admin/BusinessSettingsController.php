@@ -620,12 +620,15 @@ class BusinessSettingsController extends Controller
             'value' => $request['order_notification_type']
         ]);
 
-        Helpers::businessUpdateOrInsert(['key' => 'free_delivery_over_status'], [
-            'value' => $request['free_delivery_over_status'] ? $request['free_delivery_over_status'] : null
+        Helpers::businessUpdateOrInsert(['key' => 'admin_free_delivery_status'], [
+            'value' => $request['admin_free_delivery_status'] ? $request['admin_free_delivery_status'] : null
         ]);
 
         Helpers::businessUpdateOrInsert(['key' => 'free_delivery_over'], [
-            'value' => $request['free_delivery_over_status'] ? $request['free_delivery_over'] : null
+            'value' => $request['admin_free_delivery_status'] && $request['admin_free_delivery_option'] == 'free_delivery_by_order_amount' ? $request['free_delivery_over'] : null
+        ]);
+        Helpers::businessUpdateOrInsert(['key' => 'admin_free_delivery_option'], [
+            'value' => $request['admin_free_delivery_status'] && $request['admin_free_delivery_option'] ?  $request['admin_free_delivery_option'] : null
         ]);
 
         Helpers::businessUpdateOrInsert(['key' => 'additional_charge_status'], [
