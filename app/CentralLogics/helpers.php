@@ -2,6 +2,7 @@
 
 namespace App\CentralLogics;
 
+use App\Models\VendorEmployee;
 use DateTime;
 use App\Models\Tag;
 use App\Models\Item;
@@ -28,6 +29,7 @@ use App\Models\GenericName;
 use App\Models\StoreWallet;
 use App\Models\Translation;
 use Illuminate\Support\Str;
+use mysql_xdevapi\Exception;
 use PayPal\Api\Transaction;
 use App\Models\ItemCampaign;
 use App\Models\FlashSaleItem;
@@ -102,6 +104,18 @@ class Helpers
     public static function variation_price($product, $variation)
     {
         $match = json_decode($variation, true)[0];
+        $result = ['price' => 0, 'stock' => 0];
+        foreach (json_decode($product['variations'], true) as $property => $value) {
+            if ($value['type'] == $match['type']) {
+                $result = ['price' => $value['price'], 'stock' => $value['stock'] ?? 0];
+            }
+        }
+        return $result;
+    }
+
+    public static function pos_variation_price($product, $variation)
+    {
+        $match = json_decode($variation, true);
         $result = ['price' => 0, 'stock' => 0];
         foreach (json_decode($product['variations'], true) as $property => $value) {
             if ($value['type'] == $match['type']) {
@@ -204,8 +218,13 @@ class Helpers
             ->where(['item_id' => $data['id']])->first();
         $data['flash_sale'] =(int) (($running_flash_sale) ? 1 :0);
         $data['stock'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->available_stock : $data['stock'];
-        $data['discount'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->discount : $data['discount'];
-        $data['discount_type'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->discount_type : $data['discount_type'];
+
+             $discount_data= self::product_discount_calculate($data, $data['price'], $data->store , true);
+
+                $data['discount'] = $discount_data['discount_percentage'];
+                $data['discount_type'] = $discount_data['original_discount_type'];
+
+
         $data['store_discount'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? 0 : (self::get_store_discount($data->store) ? $data->store?->discount->discount : 0);
         $data['schedule_order'] = $data->store->schedule_order;
         $data['rating_count'] = (int)($data->rating ? array_sum(json_decode($data->rating, true)) : 0);
@@ -290,8 +309,11 @@ class Helpers
                     ->where(['item_id' => $item['id']])->first();
                 $item['flash_sale'] =(int) ((($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? 1 :0));
                 $item['stock'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->available_stock : $item['stock'];
-                $item['discount'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->discount : $item['discount'];
-                $item['discount_type'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->discount_type : $item['discount_type'];
+                $discount_data= self::product_discount_calculate($item, $item['price'], $item->store , true);
+
+                $item['discount'] = $discount_data['discount_percentage'];
+                $item['discount_type'] = $discount_data['original_discount_type'];
+
                 $item['store_discount'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? 0 : (self::get_store_discount($item->store) ? $item->store?->discount->discount : 0);
                 $item['schedule_order'] = $item->store?->schedule_order;
                 $item['delivery_time'] = $item->store?->delivery_time;
@@ -314,6 +336,13 @@ class Helpers
                 $item['nutritions_name']= $item?->nutritions ? Nutrition::whereIn('id',$item?->nutritions->pluck('id') )->pluck('nutrition') : null;
                 $item['allergies_name']= $item?->allergies ?Allergy::whereIn('id',$item?->allergies->pluck('id') )->pluck('allergy') : null;
                 $item['generic_name']= $item?->generic ? GenericName::whereIn('id',$item?->generic->pluck('id') )->pluck('generic_name'): null ;
+
+
+                $item['tax_data'] = $item?->taxVats ?$item?->taxVats()->pluck('tax_id')->toArray(): [] ;
+
+                $item['tax_data']= \Modules\TaxModule\Entities\Tax::whereIn('id', $item['tax_data'])->get(['id', 'name', 'tax_rate']);
+                unset($item['taxVats']);
+
 
                 unset($item['nutritions']);
                 unset($item['allergies']);
@@ -375,8 +404,16 @@ class Helpers
                 ->where(['item_id' => $data['id']])->first();
             $data['flash_sale'] =(int) (($running_flash_sale) ? 1 :0);
             $data['stock'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->available_stock : $data['stock'];
-            $data['discount'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->discount : $data['discount'];
-            $data['discount_type'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->discount_type : $data['discount_type'];
+
+
+            // $data['discount'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->discount : $data['discount'];
+            // $data['discount_type'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->discount_type : $data['discount_type'];
+            $discount_data= self::product_discount_calculate($data, $data['price'], $data->store , true);
+            $data['discount'] = $discount_data['discount_percentage'];
+            $data['discount_type'] = $discount_data['original_discount_type'];
+
+
+
             $data['store_discount'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? 0 : (self::get_store_discount($data->store) ? $data->store?->discount->discount : 0);
             $data['schedule_order'] = $data->store->schedule_order;
             $data['rating_count'] = (int)($data->rating ? array_sum(json_decode($data->rating, true)) : 0);
@@ -401,7 +438,14 @@ class Helpers
             }
 
             $data->store['self_delivery_system'] = (int) $data->store->sub_self_delivery;
+            $data['tax_data'] = $data?->taxVats ?$data?->taxVats()->pluck('tax_id')->toArray(): [] ;
 
+            $data['tax_data']= \Modules\TaxModule\Entities\Tax::whereIn('id', $data['tax_data'])->get(['id', 'name', 'tax_rate']);
+            unset($data['taxVats']);
+
+            if (!$trans) {
+                unset($data['translations']);
+            }
             unset($data['pharmacy_item_details']);
             unset($data['store']);
             unset($data['rating']);
@@ -525,7 +569,10 @@ class Helpers
                 $item['nutritions_name']= $item?->nutritions ? Nutrition::whereIn('id',$item?->nutritions->pluck('id') )->pluck('nutrition') : null;
                 $item['allergies_name']= $item?->allergies ?Allergy::whereIn('id',$item?->allergies->pluck('id') )->pluck('allergy') : null;
                 $item['generic_name']= $item?->generic ? GenericName::whereIn('id',$item?->generic->pluck('id') )->pluck('generic_name'): null ;
+                $item['tax_ids']= $item?->taxVats ?$item?->taxVats()->pluck('tax_id')->toArray(): [] ;
 
+
+                unset($item['taxVats']);
                 unset($item['nutritions']);
                 unset($item['allergies']);
                 unset($item['generic']);
@@ -638,6 +685,9 @@ class Helpers
             $data['allergies_name']= $data?->allergies ?Allergy::whereIn('id',$data?->allergies->pluck('id') )->pluck('allergy') : null;
             $data['generic_name']= $data?->generic ? GenericName::whereIn('id',$data?->generic->pluck('id') )->pluck('generic_name'): null ;
 
+            $data['tax_ids']= $data?->taxVats ?$data?->taxVats()->pluck('tax_id')->toArray(): [] ;
+
+            unset($data['taxVats']);
 
             if (!$trans) {
                 unset($data['translations']);
@@ -659,52 +709,14 @@ class Helpers
         $storage = [];
         if ($multi_data == true) {
             foreach ($data as $item) {
-                // if ($trans) {
-                //     $item['translations'][] = [
-                //         'translationable_type' => 'App\Models\AddOn',
-                //         'translationable_id' => $item->id,
-                //         'locale' => 'en',
-                //         'key' => 'name',
-                //         'value' => $item->name
-                //     ];
-                // }
-                // if (count($item->translations) > 0) {
-                //     foreach ($item['translations'] as $translation) {
-                //         if ($translation['locale'] == $local && $translation['key'] == 'name') {
-                //             $item['name'] = $translation['value'];
-                //         }
-                //     }
-                // }
-
-                // if (!$trans) {
-                //     unset($item['translations']);
-                // }
-
+                $item['tax_ids']= $item?->taxVats ?$item?->taxVats()->pluck('tax_id')->toArray(): [] ;
+                unset($item['taxVats']);
                 $storage[] = $item;
             }
             $data = $storage;
         } else if (isset($data)) {
-            // if ($trans) {
-            //     $data['translations'][] = [
-            //         'translationable_type' => 'App\Models\AddOn',
-            //         'translationable_id' => $data->id,
-            //         'locale' => 'en',
-            //         'key' => 'name',
-            //         'value' => $data->name
-            //     ];
-            // }
-
-            // if (count($data->translations) > 0) {
-            //     foreach ($data['translations'] as $translation) {
-            //         if ($translation['locale'] == $local && $translation['key'] == 'name') {
-            //             $data['name'] = $translation['value'];
-            //         }
-            //     }
-            // }
-
-            // if (!$trans) {
-            //     unset($data['translations']);
-            // }
+            $item['tax_ids']= $data?->taxVats ?$data?->taxVats()->pluck('tax_id')->toArray(): [] ;
+            unset($item['taxVats']);
         }
         return $data;
     }
@@ -1345,6 +1357,7 @@ class Helpers
     // START arrocyWG mods by Arrocy 1 of 1 //
     public static function send_wa_notif_to_device($receiver, $msgdata, $arrocyWG)
     {
+        $apiurl = $arrocyWG['nodeurl'] . '/send';
         $data = [
             'receiver'  => $receiver,
             'msgtext'   => $msgdata['description'],
@@ -1356,7 +1369,7 @@ class Helpers
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($data));
-        curl_setopt($ch, CURLOPT_URL, 'https://arrocy.com/api/send');
+        curl_setopt($ch, CURLOPT_URL, $apiurl);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
@@ -1412,14 +1425,19 @@ class Helpers
         return $discount;
     }
 
-    public static function product_discount_calculate($product, $price, $store)
+    public static function product_discount_calculate($product, $price, $store , $check_store_discount = true)
     {
+        $discount_percentage=0;
+        $store_discount_percentage=0;
+        $store_discount= null;
+
         $running_flash_sale = FlashSaleItem::Active()->whereHas('flashSale', function ($query) {
             $query->Active()->Running();
         })
             ->where(['item_id' => $product->id])->first();
 
         if($running_flash_sale){
+            $discount_percentage=$running_flash_sale['discount'];
             if ($running_flash_sale['discount_type'] == 'percent') {
                 $price_discount = ($price / 100) * $running_flash_sale['discount'];
             } else {
@@ -1430,21 +1448,34 @@ class Helpers
                 'discount_amount'=> $price_discount,
                 'admin_discount_amount'=> ($price_discount*$running_flash_sale->flashSale->admin_discount_percentage)/100,
                 'vendor_discount_amount'=> ($price_discount*$running_flash_sale->flashSale->vendor_discount_percentage)/100,
+                'discount_percentage'=> $discount_percentage ?? 0,
+                'original_discount_type'=>$running_flash_sale['discount_type'],
             ];
         }
-
-        $store_discount = self::get_store_discount($store);
-        if (isset($store_discount)) {
-            $price_discount = ($price / 100) * $store_discount['discount'];
-        } else if ($product['discount_type'] == 'percent') {
+        $store_price_discount=0;
+        if($check_store_discount){
+            $store_discount = self::get_store_discount($store);
+            if (isset($store_discount)) {
+                $store_price_discount = ($price / 100) * $store_discount['discount'];
+                $store_discount_percentage = $store_discount['discount'];
+            }
+        }
+        $discount_percentage = $product['discount'];
+        if ($product['discount_type'] == 'percent') {
             $price_discount = ($price / 100) * $product['discount'];
         } else {
             $price_discount = $product['discount'];
         }
 
+        $discount_percentage=isset($store_discount) && $price_discount == $store_price_discount?$store_discount_percentage:$discount_percentage??0;
+
+        $price_discount = max($store_price_discount,$price_discount);
+        $discount_type=isset($store_discount) && $price_discount == $store_price_discount?'store_discount':'product_discount';
         return [
-            'discount_type'=>isset($store_discount)?'store_discount':'product_discount',
-            'discount_amount'=> $price_discount
+            'discount_type'=>$discount_type,
+            'discount_amount'=> $price_discount,
+            'discount_percentage'=> $discount_type == 'store_discount'? $store_discount['discount'] :$product['discount'],
+            'original_discount_type'=> $discount_type == 'store_discount'? 'percent': $product['discount_type'],
         ];
     }
 
@@ -1614,13 +1645,16 @@ class Helpers
 
     public static function send_order_notification($order)
     {
-        $push_notification_status=self::getNotificationStatusData('store','store_order_notification','push_notification_status', $order?->store?->id);
+        $push_notification_status = self::getNotificationStatusData('store','store_order_notification','push_notification_status', $order?->store?->id);
 
         try {
             $arrocyWG = self::get_settings('arrocyWG');
 
+            if((in_array($order->payment_method, ['cash_on_delivery', 'offline_payment'])
+                && $order->order_status == 'pending' ) ||
+                (!in_array($order->payment_method, ['cash_on_delivery', 'offline_payment'])
+                && $order->order_status == 'confirmed' )){
 
-            if((in_array($order->payment_method, ['cash_on_delivery', 'offline_payment'])  && $order->order_status == 'pending' )||(!in_array($order->payment_method, ['cash_on_delivery', 'offline_payment']) && $order->order_status == 'confirmed' )){
                 $data = [
                     'title' => translate('Order_Notification'),
                     'description' => translate('messages.new_order_push_description'),
@@ -1631,6 +1665,7 @@ class Helpers
                     'zone_id' => $order->zone_id,
                     'type' => 'new_order',
                 ];
+
                 self::send_push_notif_to_topic($data, 'admin_message', 'order_request', url('/').'/admin/order/list/all');
             }
 
@@ -1694,6 +1729,8 @@ class Helpers
                         'created_at' => now(),
                         'updated_at' => now()
                     ]);
+
+                    self::sendStoreEmployeeNotification($order, $data);
                 }
             }
 
@@ -1721,6 +1758,8 @@ class Helpers
                             'created_at' => now(),
                             'updated_at' => now()
                         ]);
+
+                        self::sendStoreEmployeeNotification($order, $data);
                     }
                 } else {
                     $data = [
@@ -1788,6 +1827,8 @@ class Helpers
                         'created_at' => now(),
                         'updated_at' => now()
                     ]);
+
+                    self::sendStoreEmployeeNotification($order, $data);
                 }
             }
 
@@ -1810,6 +1851,8 @@ class Helpers
                         'created_at' => now(),
                         'updated_at' => now()
                     ]);
+
+                    self::sendStoreEmployeeNotification($order, $data);
                 }
             }
 
@@ -1846,6 +1889,8 @@ class Helpers
                             'created_at' => now(),
                             'updated_at' => now()
                         ]);
+
+                        self::sendStoreEmployeeNotification($order, $data);
                     }
                 }
             }
@@ -2142,10 +2187,10 @@ class Helpers
                 } else {
                     $add_on_qty = $add_on_qtys[$key2];
                 }
-                $data[] = ['id' => $addon->id, 'name' => $addon->name, 'price' => $addon->price, 'quantity' => $add_on_qty];
+                $data[] = ['id' => $addon->id, 'name' => $addon->name, 'price' => $addon->price, 'quantity' => $add_on_qty,'category_id'=>$addon->addon_category_id];
                 $add_ons_cost += $addon['price'] * $add_on_qty;
             }
-            return ['addons' => $data, 'total_add_on_price' => $add_ons_cost];
+            return ['addons' => $data, 'total_add_on_price' => $add_ons_cost,];
         }
         return null;
     }
@@ -2829,6 +2874,36 @@ class Helpers
         }
 
         return ['price'=>$variation_price,'variations'=>$result];
+    }
+    public static function get_edit_varient(array $product_variations, $variations)
+    {
+        $result = [];
+        $variation_price = 0;
+
+        foreach ($variations as $k => $variation) {
+            foreach ($product_variations as $product_variation) {
+                if (
+                    isset($variation['values']) &&
+                    isset($product_variation['values']) &&
+                    $product_variation['name'] == $variation['name']
+                ) {
+                    $result[$k] = $product_variation;
+                    $result[$k]['values'] = [];
+
+                    foreach ($product_variation['values'] as $option) {
+                        foreach ($variation['values'] as $selected) {
+                            if (isset($selected['label']) && $option['label'] === $selected['label']) {
+                                $result[$k]['values'][] = $option;
+                                $variation_price += $option['optionPrice'];
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return ['price' => $variation_price, 'variations' => $result];
     }
 
     public static function food_variation_price($product, $variations)
@@ -4200,13 +4275,13 @@ class Helpers
         return $data;
     }
 
-    public static function getNotificationStatusData($user_type,$key,$notification_type, $store_id= null){
-        $data= NotificationSetting::where('type',$user_type)->where('key',$key)->select($notification_type)->first();
-        $data= $data?->{$notification_type} === 'active' ? 1 : 0;
+    public static function getNotificationStatusData($user_type,$key, $notification_type, $store_id = null){
+        $data = NotificationSetting::where('type',$user_type)->where('key',$key)->select($notification_type)->first();
+        $data = $data?->{$notification_type} === 'active' ? 1 : 0;
 
-        if($store_id && $user_type == 'store' && $data === 1){
-            $data= self::getStoreNotificationStatusData(store_id:$store_id,key:$key ,notification_type: $notification_type);
-            $data= $data?->{$notification_type} === 'active' ? 1 : 0;
+        if( $store_id && $user_type == 'store' && $data === 1 ){
+            $data = self::getStoreNotificationStatusData(store_id:$store_id,key:$key ,notification_type: $notification_type);
+            $data = $data?->{$notification_type} === 'active' ? 1 : 0;
         }
 
         return $data;
@@ -4259,10 +4334,10 @@ class Helpers
         return true;
     }
     public static function getStoreNotificationStatusData($store_id,$key,$notification_type){
-        $data= StoreNotificationSetting::where('store_id',$store_id)->where('key',$key)->select($notification_type)->first();
+        $data = StoreNotificationSetting::where('store_id',$store_id)->where('key',$key)->select($notification_type)->first();
         if(!$data){
             self::storeNotificationDataSetup($store_id);
-            $data= StoreNotificationSetting::where('store_id',$store_id)->where('key',$key)->select($notification_type)->first();
+            $data = StoreNotificationSetting::where('store_id',$store_id)->where('key',$key)->select($notification_type)->first();
         }
         return $data ?? null ;
     }
@@ -4569,6 +4644,7 @@ class Helpers
         return null;
     }
 
+
     public static function deleteCacheData($prefix)
     {
         $cacheKeys = DB::table('cache')
@@ -4591,5 +4667,175 @@ class Helpers
         $finalPrice = max(0, $productPrice - $discountApplied);
         return ['final_price' => $finalPrice, 'discount_applied' => $discountApplied];
     }
+
+
+      public static function checkAdminDiscount($price, $discount, $max_discount, $min_purchase, $item_wise_price = null)
+    {
+        if ($price > 0 &&  $discount > 0) {
+            $discount = ($price  * $discount) / 100;
+            $discount = $discount > $max_discount ? $max_discount : $discount;
+            $discount = $price >= $min_purchase ? $discount : 0;
+        }
+
+        if ($discount > 0 && $item_wise_price > 0) {
+            $discount = ($item_wise_price / $price) * $discount;
+        }
+
+        return $discount ?? 0;
+    }
+
+
+  public static function getFinalCalculatedTax($details_data, $additionalCharges, $totalDiscount, $price, $storeId, $storeData = true)
+    {
+        $addonIds = [];
+        $products=[];
+        $tempList = [];
+        $taxData = [];
+
+        $productDiscountTotal = 0;
+        $addonDiscountTotal = 0;
+        $totalAfterOwnDiscounts = 0;
+        if (addon_published_status('TaxModule')) {
+
+            foreach ($details_data as $item) {
+                $item_id = $item['item_id'] ?? $item['item_campaign_id'];
+                $itemWiseDiscount = $item['discount_type'] === 'product_discount'  ? $item['discount_on_item'] * $item['quantity'] : $item['discount_on_item'];
+                $productDiscountTotal += $itemWiseDiscount;
+
+                $itemTotal = $item['price'] * $item['quantity'];
+                $itemFinal = $itemTotal - $itemWiseDiscount;
+
+                $tempList[] = [
+                    'type' => 'product',
+                    'id' => $item_id,
+                    'original_price' => $item['price'],
+                    'quantity' => $item['quantity'],
+                    'category_id' => $item['category_id'],
+                    'discount' => $item['discount_on_item'],
+                    'discount_type' => $item['discount_type'],
+                    'base_final' => $itemFinal,
+                    'is_campaign_item' => $item['item_campaign_id'] ? true : false,
+                ];
+
+                $totalAfterOwnDiscounts += $itemFinal;
+
+                // --- Addons
+                $addons = json_decode($item['add_ons'], true) ?? [];
+                $addonDiscount = $item['addon_discount'] ?? 0;
+                $addonTotalPrice = $item['total_add_on_price'] ?? 1; // Avoid division by zero
+
+                $addonDiscountTotal += $addonDiscount;
+
+                foreach ($addons as $addon) {
+                    $addonPrice = $addon['price'] * $addon['quantity'];
+                    $discountPart = $addonDiscount * ($addonPrice / $addonTotalPrice);
+                    $addonFinal = $addonPrice - $discountPart;
+
+                    $tempList[] = [
+                        'type' => 'addon',
+                        'addon_id' => $addon['id'],
+                        'item_id' => $item_id,
+                        'quantity' => $addon['quantity'],
+                        'category_id' => $addon['category_id'] ?? null,
+                        'original_price' => $addon['price'],
+                        'base_final' => $addonFinal,
+                        'total_addon_addon_price' => $addonTotalPrice,
+                        'total_addon_discount' => $addonDiscount,
+                    ];
+
+                    $totalAfterOwnDiscounts += $addonFinal;
+                }
+            }
+
+            $otherDiscounts = $totalDiscount - ($productDiscountTotal + $addonDiscountTotal);
+
+            foreach ($tempList as $entry) {
+                $share = ($entry['base_final'] / $totalAfterOwnDiscounts) * $otherDiscounts;
+                $finalPrice = $entry['base_final'] - $share;
+
+                if ($entry['type'] === 'product') {
+                    $products[] = [
+                        'id' => $entry['id'],
+                        'original_price' => $entry['original_price'],
+                        'quantity' => $entry['quantity'],
+                        'category_id' => $entry['category_id'],
+                        'discount' => $entry['discount'],
+                        'discount_type' => $entry['discount_type'],
+                        'after_discount_final_price' => $finalPrice,
+                        'is_campaign_item' => $entry['is_campaign_item'],
+                    ];
+                } else {
+                    $addonIds[] = [
+                        'addon_id' => $entry['addon_id'],
+                        'item_id' => $entry['item_id'],
+                        'quantity' => $entry['quantity'],
+                        'category_id' => $entry['category_id'],
+                        'original_price' => $entry['original_price'],
+                        'after_discount_final_price' => $finalPrice,
+                        'total_addon_addon_price' => $entry['total_addon_addon_price'],
+                        'total_addon_discount' => $entry['total_addon_discount'],
+                    ];
+                }
+            }
+
+            $taxData =  \Modules\TaxModule\Services\CalculateTaxService::getCalculatedTax(
+                amount: $price,
+                productIds: $products,
+                taxPayer: 'vendor',
+                storeData: $storeData,
+                additionalCharges: $additionalCharges,
+                addonIds: $addonIds,
+                orderId: null,
+                storeId: $storeId
+            );
+            $tax_amount = $taxData['totalTaxamount'];
+            $tax_included = $taxData['include'];
+            $tax_status = $tax_included ?  'included' : 'excluded';
+
+            foreach ($taxData['productWiseData'] ?? [] as $key => $item) {
+                $taxMap[$key] = $item;
+            }
+        }
+
+        return [
+            'tax_amount' => $tax_amount ?? 0,
+            'tax_included' => $tax_included ?? null,
+            'tax_status' => $tax_status ?? 'excluded',
+            'taxMap' => $taxMap ?? [],
+            'taxType'=> data_get($taxData,'taxType'),
+            'taxData' => $taxData ?? [],
+        ];
+    }
+
+    public static function sendStoreEmployeeNotification($order, $data)
+    {
+        $employees = VendorEmployee::where('store_id', $order->store->id)->get();
+        foreach ($employees as $employee) {
+            self::send_push_notif_to_device($employee->firebase_token, $data);
+        }
+
+    }
+
+
+    public static function getTaxSystemType($getTaxVatList = true,$tax_payer='vendor'){
+        if (addon_published_status('TaxModule')) {
+            $SystemTaxVat = \Modules\TaxModule\Entities\SystemTaxSetup::where('is_active', 1)
+                ->where('tax_payer', $tax_payer)->where('is_default', 1)->first();
+            if(!$SystemTaxVat){
+                 return [ 'productWiseTax' => false ,'categoryWiseTax'=> false,  'taxVats' =>  []];
+            }
+            if($getTaxVatList){
+                $taxVats =  \Modules\TaxModule\Entities\Tax::where('is_active', 1)->where('is_default', 1)->get(['id', 'name', 'tax_rate']);
+            }
+
+            if ($SystemTaxVat?->tax_type == 'product_wise') {
+                $productWiseTax = true;
+            } elseif ($SystemTaxVat?->tax_type == 'category_wise') {
+                $categoryWiseTax = true;
+            }
+        }
+        return [ 'productWiseTax' => $productWiseTax?? false ,'categoryWiseTax'=> $categoryWiseTax?? false,  'taxVats' => $taxVats ?? []];
+    }
+
 }
 
