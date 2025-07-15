@@ -572,20 +572,12 @@ class BusinessSettingsController extends Controller
             'value' => $request['cookies_text']
         ]);
 
-        Helpers::businessUpdateOrInsert(['key' => 'minimum_shipping_charge'], [
-            'value' => $request['minimum_shipping_charge']
-        ]);
-        Helpers::businessUpdateOrInsert(['key' => 'per_km_shipping_charge'], [
-            'value' => $request['per_km_shipping_charge']
-        ]);
 
         Helpers::businessUpdateOrInsert(['key' => 'currency_symbol_position'], [
             'value' => $request['currency_symbol_position']
         ]);
 
-        Helpers::businessUpdateOrInsert(['key' => 'tax_included'], [
-            'value' => $request['tax_included']
-        ]);
+
         Helpers::businessUpdateOrInsert(['key' => 'order_confirmation_model'], [
             'value' => $request['order_confirmation_model']
         ]);
