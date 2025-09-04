@@ -55,6 +55,7 @@ use App\Mail\SubscriptionRenewOrShift;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Schema;
 use App\Library\Payment as PaymentInfo;
+use App\Models\PriorityList;
 use App\Models\SubscriptionTransaction;
 use Illuminate\Support\Facades\Storage;
 use App\Models\StoreNotificationSetting;
@@ -252,6 +253,45 @@ class Helpers
 
         return $data;
     }
+    public static function productListDataFormatting($data)
+    {
+        return collect($data)->map(function ($item) {
+            $discount = self::product_discount_calculate($item, $item->price, $item->store, true);
+            $module_type =$item->store?->module_type;
+            $has_variant=$module_type=='food' ? $item->food_variations : $item->variations;
+            $has_variant=  is_string($has_variant) ? json_decode($has_variant, true) : $has_variant;
+            $has_variant = is_array($has_variant) ? count($has_variant) : 0;
+
+            return [
+                'id' => (int) $item->id,
+                'name' => $item->title ?? $item->name,
+                'image_full_url' => $item->image_full_url,
+                'price' => $item->price,
+                'veg' => $item->veg,
+                'unit_type' => $item->unit_type,
+                'recommended' => $item->recommended,
+                'organic' => $item->organic,
+                'is_halal' => (int) $item->is_halal??0,
+                'stock' => (int) $item->stock??0,
+                'maximum_cart_quantity' => (int) $item->maximum_cart_quantity??0,
+                'discount' => $discount['discount_percentage'],
+                'discount_type' => $discount['original_discount_type'],
+                'rating_count' => (int) ($item->rating ? array_sum(json_decode($item->rating, true)) : 0),
+                'avg_rating' => (float) ($item->avg_rating ?? 0),
+
+                'has_variant' => (int) $has_variant,
+                'available_time_starts' => ($item->start_time instanceof \Carbon\Carbon) ? $item->start_time->format('H:i')  : ($item->available_time_starts ?? null),
+                'available_time_ends' => ($item->end_time instanceof \Carbon\Carbon) ? $item->end_time->format('H:i')  : ($item->available_time_ends ?? null),
+
+                'halal_tag_status' => (int) $item->store->storeConfig?->halal_tag_status??0,
+                'store_name' => $item->store?->name,
+                'store_id' => $item->store?->id,
+                'module_type' => $module_type,
+                'halal_tag_status' => (int) ($item->store->storeConfig->halal_tag_status ?? 0),
+                'free_delivery' => $item->store?->free_delivery,
+            ];
+        })->toArray();
+    }
 
     public static function product_data_formatting($data, $multi_data = false, $trans = false, $local = 'en' , $temp_product=false)
     {
@@ -318,7 +358,7 @@ class Helpers
                 $item['schedule_order'] = $item->store?->schedule_order;
                 $item['delivery_time'] = $item->store?->delivery_time;
                 $item['free_delivery'] = $item->store?->free_delivery;
-                $item['tax'] = $item->store?->tax;
+                $item['tax'] = 0;
                 $item['unit'] = $item->unit;
                 $item['rating_count'] = (int)($item->rating ? array_sum(json_decode($item->rating, true)) : 0);
                 $item['avg_rating'] = (float)($item->avg_rating ? $item->avg_rating : 0);
@@ -443,9 +483,7 @@ class Helpers
             $data['tax_data']= \Modules\TaxModule\Entities\Tax::whereIn('id', $data['tax_data'])->get(['id', 'name', 'tax_rate']);
             unset($data['taxVats']);
 
-            if (!$trans) {
-                unset($data['translations']);
-            }
+    
             unset($data['pharmacy_item_details']);
             unset($data['store']);
             unset($data['rating']);
@@ -516,7 +554,7 @@ class Helpers
                 $item['discount_type'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? $running_flash_sale->discount_type : $item['discount_type'];
                 $item['store_discount'] = ($running_flash_sale && ($running_flash_sale->available_stock > 0)) ? 0 : (self::get_store_discount($item->store) ? $item->store?->discount->discount : 0);
                 $item['schedule_order'] = $item->store->schedule_order;
-                $item['tax'] = $item->store->tax;
+                $item['tax'] = 0;
                 $item['rating_count'] = (int)($item->rating ? array_sum(json_decode($item->rating, true)) : 0);
                 $item['avg_rating'] = (float)($item->avg_rating ? $item->avg_rating : 0);
                 $item['recommended'] =(int) $item->recommended;
@@ -1074,26 +1112,100 @@ class Helpers
         return $data;
     }
 
-    public static function get_business_settings($name)
-    {
-        // return Cache::rememberForever("business_settings_{$name}", function () use ($name) {
-        //     $config = BusinessSetting::where('key', $name)->first();
-        //     return $config ? json_decode($config->value, true) : null;
-        // });
-        $config = null;
-        $settings = Cache::rememberForever("business_settings_all_data", function () {
-            return BusinessSetting::all();
-        });
+    // public static function get_business_settings($name)
+    // {
+    //     $config = null;
+    //     $settings = Cache::rememberForever("business_settings_all_data", function () {
+    //         return BusinessSetting::all();
+    //     });
 
-        $data = $settings?->firstWhere('key', $name);
-        if (isset($data)) {
-            $config = json_decode($data['value'], true);
-            if (is_null($config)) {
-                $config = $data['value'];
+    //     $data = $settings?->firstWhere('key', $name);
+    //     if (isset($data)) {
+    //         $config = json_decode($data['value'], true);
+    //         if (is_null($config)) {
+    //             $config = $data['value'];
+    //         }
+    //     }
+    //     return $config;
+    // }
+
+        public static function get_business_settings($key, $json_decode = true,$relations = [])
+        {
+            try {
+                static $allSettings = null;
+
+                $configKey = $key . '_conf';
+                if (Config::has($configKey)) {
+                    $data = Config::get($configKey);
+                } else {
+                    if (is_null($allSettings)) {
+                        $allSettings = Cache::rememberForever('business_settings_all_data', function () {
+                            return BusinessSetting::select('key', 'value')->get();
+                        });
+                    }
+
+                    $data = $allSettings->firstWhere('key', $key);
+                    if ($data && !empty($relations)) {
+                        $data->loadMissing($relations);
+                    }
+                    Config::set($configKey, $data);
+                }
+
+                if (!isset($data['value'])) {
+                    return null;
+                }
+
+                $value = $data['value'];
+                if ($json_decode && is_string($value)) {
+                    $decoded = json_decode($value, true);
+                    return is_null($decoded) ? $value : $decoded;
+                }
+
+                return $value;
+            } catch (\Throwable $th) {
+                return null;
             }
+
         }
-        return $config;
-    }
+        public static function getPriorityList($name,$type, $relations = [],$json_decode=false)
+        {
+            try {
+                static $allSettings = null;
+
+                $configKey = $name.'_'.$type . '_conf';
+                if (Config::has($configKey)) {
+                    $data = Config::get($configKey);
+                } else {
+                    if (is_null($allSettings)) {
+                        $allSettings = Cache::rememberForever('priority_settings_all_data', function () {
+                            return PriorityList::select('name', 'value','type')->get();
+                        });
+                    }
+                    $data = $allSettings->where('name', $name)->where('type', $type)->first();
+                    if ($data && !empty($relations)) {
+                        $data->loadMissing($relations);
+                    }
+                    Config::set($configKey, $data);
+                }
+
+                if (!isset($data['value'])) {
+                    return null;
+                }
+
+                $value = $data['value'];
+                if ($json_decode && is_string($value)) {
+                    $decoded = json_decode($value, true);
+                    return is_null($decoded) ? $value : $decoded;
+                }
+
+                return $value;
+            } catch (\Throwable $th) {
+                return null;
+            }
+
+        }
+
+
 
     public static function get_business_data($name)
     {
@@ -2150,7 +2262,7 @@ class Helpers
         if (auth('vendor')->check()) {
             if ($mod_name == 'reviews') {
                 return auth('vendor')->user()->stores[0]->reviews_section;
-            } else if ($mod_name == 'deliveryman') {
+            } else if ($mod_name == 'deliveryman' || $mod_name == 'deliveryman_list') {
                 return auth('vendor')->user()->stores[0]->self_delivery_system;
             } else if ($mod_name == 'pos') {
                 return auth('vendor')->user()->stores[0]->pos_system;
@@ -2163,7 +2275,7 @@ class Helpers
             if (isset($permission) && in_array($mod_name, (array)json_decode($permission)) == true) {
                 if ($mod_name == 'reviews') {
                     return auth('vendor_employee')->user()->store->reviews_section;
-                } else if ($mod_name == 'deliveryman') {
+                } else if ($mod_name == 'deliveryman'|| $mod_name == 'deliveryman_list') {
                     return auth('vendor_employee')->user()->store->self_delivery_system;
                 } else if ($mod_name == 'pos') {
                     return auth('vendor_employee')->user()->store->pos_system;
@@ -4838,4 +4950,5 @@ class Helpers
     }
 
 }
+
 
