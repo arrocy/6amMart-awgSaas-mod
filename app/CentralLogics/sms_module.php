@@ -67,7 +67,7 @@ class SMS_module
             $msgdata['description'] = str_replace("#OTP#", $otp, $arrocyWG['otp_template']);
             $response = \App\CentralLogics\Helpers::send_wa_notif_to_device($receiver, $msgdata, $arrocyWG);
             $res = json_decode($response, true);
-            if (!empty($res['success'])) {
+            if (!empty($res['id']) || !empty($res['success'])) {
                 return 'success';
             } else {
                 return 'fallback';
