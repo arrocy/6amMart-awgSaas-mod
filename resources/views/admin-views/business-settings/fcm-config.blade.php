@@ -153,16 +153,16 @@
                                     </span>
                                 </label>
                             </div>
-                            <ol>
+                            <!-- <ol>
                                 <h3>How to get Arrocy Whatsapp Gateway Token:</h3>
                                 <li>Login/Register at <a href="https://arrocy.com" target="_blank">ARROCY.COM</a></li>
                                 <li>Go to menu Devices (copy TOKEN, put in the box below) and click on your phone number to show Whatsapp QR code</li>
                                 <li>Open Whatsapp on your phone, Menu >> Linked devices</li>
                                 <li>You will see your profile picture if successfully connected</li>
-                            </ol>
+                            </ol> -->
                             <div class="form-group">
-                                <label class="input-label" for="exampleFormControlInput1" hidden>arrocyWG node server:</label>
-                                <input name="arrocyWG_nodeurl" class="form-control" value="{{$arrocyWG['nodeurl']}}" placeholder="https://arrocy.com/api" readonly hidden />
+                                <label class="input-label" for="exampleFormControlInput1">arrocyWG node server:</label>
+                                <input name="arrocyWG_nodeurl" class="form-control" value="{{$arrocyWG['nodeurl']}}" placeholder="https://arrocy.com/api" />
                             </div>
                             <div class="form-group">
                                 <label class="input-label" for="exampleFormControlInput1">arrocyWG token:</label>
