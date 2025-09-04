@@ -122,22 +122,22 @@ class BusinessSettingsController extends Controller
                 }
 
                 if ($request[$item . '_sort_by_general']) {
-                    PriorityList::query()->updateOrInsert(['name' => $item . '_sort_by_general', 'type' => 'general'], [
+                    PriorityList::updateOrCreate(['name' => $item . '_sort_by_general', 'type' => 'general'], [
                         'value' => $request[$item . '_sort_by_general']
                     ]);
                 }
                 if ($request[$item . '_sort_by_unavailable']) {
-                    PriorityList::query()->updateOrInsert(['name' => $item . '_sort_by_unavailable', 'type' => 'unavailable'], [
+                    PriorityList::updateOrCreate(['name' => $item . '_sort_by_unavailable', 'type' => 'unavailable'], [
                         'value' => $request[$item . '_sort_by_unavailable']
                     ]);
                 }
                 if ($request[$item . '_sort_by_temp_closed']) {
-                    PriorityList::query()->updateOrInsert(['name' => $item . '_sort_by_temp_closed', 'type' => 'temp_closed'], [
+                    PriorityList::updateOrCreate(['name' => $item . '_sort_by_temp_closed', 'type' => 'temp_closed'], [
                         'value' => $request[$item . '_sort_by_temp_closed']
                     ]);
                 }
                 if ($request[$item . '_sort_by_rating']) {
-                    PriorityList::query()->updateOrInsert(['name' => $item . '_sort_by_rating', 'type' => 'rating'], [
+                    PriorityList::updateOrCreate(['name' => $item . '_sort_by_rating', 'type' => 'rating'], [
                         'value' => $request[$item . '_sort_by_rating']
                     ]);
                 }
@@ -588,9 +588,6 @@ class BusinessSettingsController extends Controller
             'value' => $request['partial_payment_method']
         ]);
 
-        Helpers::businessUpdateOrInsert(['key' => 'tax'], [
-            'value' => $request['tax']
-        ]);
 
         Helpers::businessUpdateOrInsert(['key' => 'admin_commission'], [
             'value' => $request['admin_commission']
@@ -712,27 +709,7 @@ class BusinessSettingsController extends Controller
                 'value' => $request['subscription_business_model'] ?? 1
             ]);
         }
-        $activationMode = DB::table('external_configurations')->where('key', 'activation_mode')->first();
-        $driveMondBaseUrl = DB::table('external_configurations')->where('key', 'drivemond_base_url')->first();
-        if ($activationMode && $activationMode->value == 1 && $driveMondBaseUrl && $driveMondBaseUrl->value != null) {
-            $name = \App\Models\BusinessSetting::where('key', 'business_name')->first();
-            $logo = \App\Models\BusinessSetting::where('key', 'logo')->first();
-
-            $app_minimum_version_android=BusinessSetting::where(['key'=>'app_minimum_version_android'])->first()?->value;
-            $app_url_android=BusinessSetting::where(['key'=>'app_url_android'])->first()?->value;
-            $app_minimum_version_ios=BusinessSetting::where(['key'=>'app_minimum_version_ios'])->first()?->value;
-            $app_url_ios=BusinessSetting::where(['key'=>'app_url_ios'])->first()?->value;
-
-            $response = Http::post($driveMondBaseUrl->value . '/api/store-configurations', [
-                'mart_business_name' => $name->value ?? "6amMart",
-                'mart_business_logo' => \App\CentralLogics\Helpers::get_full_url('business', $logo?->value ?? '', $logo?->storage[0]?->value ?? 'public', 'favicon') ?? asset('public/assets/admin/img/160x160/img2.jpg'),
-                'mart_app_minimum_version_android' => $app_minimum_version_android,
-                'mart_app_url_android' => $app_url_android,
-                'mart_app_minimum_version_ios' => $app_minimum_version_ios,
-                'mart_app_url_ios' => $app_url_ios,
-
-            ]);
-        }
+ 
 
         Toastr::success(translate('messages.successfully_updated_to_changes_restart_app'));
         return back();
@@ -7622,7 +7599,14 @@ class BusinessSettingsController extends Controller
                 'translationable_type' => 'App\Models\Item',
                 'translationable_id' => $item->id
             ]);
-
+            $item?->taxVats()?->delete();
+            if (addon_published_status('TaxModule')) {
+                $SystemTaxVat = \Modules\TaxModule\Entities\SystemTaxSetup::where('is_active', 1)->where('is_default', 1)->first();
+                if ($SystemTaxVat?->tax_type == 'product_wise') {
+                    \Modules\TaxModule\Entities\Taxable::where('taxable_type', 'App\Models\TempProduct')->where('taxable_id', $data->id)
+                        ->update(['taxable_type' => 'App\Models\Item', 'taxable_id' => $item->id]);
+                }
+            }
             $data->delete();
         }
 
