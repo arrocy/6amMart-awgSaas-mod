@@ -2751,10 +2751,11 @@ class BusinessSettingsController extends Controller
             return back();
         }
 
-        if($request['otp_login_status'] && !$is_sms_active && !$is_firebase_active){
-            Session::flash('sms-config', true);
-            return back();
-        }
+        // Arrocy mod. Disable check
+        // if($request['otp_login_status'] && !$is_sms_active && !$is_firebase_active){
+        //     Session::flash('sms-config', true);
+        //     return back();
+        // }
 
         if(!$request['manual_login_status'] && !$request['otp_login_status'] && $request['social_login_status']){
             if(!$request['google_login_status'] && !$request['facebook_login_status']){
@@ -2782,10 +2783,11 @@ class BusinessSettingsController extends Controller
             return back();
         }
 
-        if($request['phone_verification_status'] && !$is_sms_active && !$is_firebase_active){
-            Session::flash('sms-config-verification', true);
-            return back();
-        }
+        // Arrocy mod. Disable check
+        // if($request['phone_verification_status'] && !$is_sms_active && !$is_firebase_active){
+        //     Session::flash('sms-config-verification', true);
+        //     return back();
+        // }
 
         if($request['email_verification_status'] && !$is_mail_active){
             Session::flash('mail-config-verification', true);
