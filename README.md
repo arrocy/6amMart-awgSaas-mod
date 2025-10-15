@@ -12,3 +12,15 @@ Modification files to 6amMart for adding whatsapp notifications and Whatsapp OTP
 3. Go to (SYSTEM MANAGEMENT) menu "3rd party & configurations" >> "Firebase Notification" >> "Firebase Configuration"
 4. Fill TOKEN (get it from arrocy.com)
 5. Click "Submit" to save the settings
+# ATTENTION!!!!
+In order to show the MODIFIED "Notification Settings" page, You will need to clear cache.
+If 6amMart does not have clear-cache button, then do this:
+- open file manager, browse to /storage/framework/views/ folder
+- delete all files in there
+# How to use
+1. Go to (SYSTEM MANAGEMENT) menu "3rd party & configurations" >> "Firebase Notification" >> "Firebase Configuration"
+2. Fill TOKEN (get it from arrocy.com)
+3. Click "Submit" to save the settings
+# How to custom the message
+1. Go to (SYSTEM MANAGEMENT) menu "3rd party & configurations" >> "Firebase Notification" >> "Push Notification"
+2. Edit the default messages
