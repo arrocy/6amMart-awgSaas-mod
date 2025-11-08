@@ -30,8 +30,6 @@ use App\Models\StoreWallet;
 use App\Models\Translation;
 use Illuminate\Support\Str;
 use mysql_xdevapi\Exception;
-use PayPal\Api\Transaction;
-use App\Models\ItemCampaign;
 use App\Models\FlashSaleItem;
 use Illuminate\Support\Carbon;
 use App\Models\BusinessSetting;
@@ -42,7 +40,6 @@ use Illuminate\Support\Facades\DB;
 use App\Mail\OrderVerificationMail;
 use App\Models\NotificationMessage;
 use App\Models\NotificationSetting;
-
 use App\Models\SubscriptionPackage;
 use App\Traits\PaymentGatewayTrait;
 use Illuminate\Support\Facades\App;
@@ -59,15 +56,15 @@ use App\Models\PriorityList;
 use App\Models\SubscriptionTransaction;
 use Illuminate\Support\Facades\Storage;
 use App\Models\StoreNotificationSetting;
-use Modules\Rental\Traits\TripLogicTrait;
 use App\Traits\NotificationDataSetUpTrait;
-use Illuminate\Database\Eloquent\Collection;
 use MatanYadaev\EloquentSpatial\Objects\Point;
 use App\Models\SubscriptionBillingAndRefundHistory;
 use Modules\Rental\Emails\ProviderSubscriptionSuccessful;
 use Modules\Rental\Emails\ProviderSubscriptionRenewOrShift;
 use Laravelpkg\Laravelchk\Http\Controllers\LaravelchkController;
 use Modules\Rental\Entities\Vehicle;
+use Illuminate\Support\Facades\Artisan;
+use App\CentralLogics\SMS_module;
 
 class Helpers
 {
@@ -483,7 +480,7 @@ class Helpers
             $data['tax_data']= \Modules\TaxModule\Entities\Tax::whereIn('id', $data['tax_data'])->get(['id', 'name', 'tax_rate']);
             unset($data['taxVats']);
 
-    
+
             unset($data['pharmacy_item_details']);
             unset($data['store']);
             unset($data['rating']);
@@ -1047,7 +1044,7 @@ class Helpers
             if ($item['item_id']){
                 $product = \App\Models\Item::where(['id' => $item['item_details']['id']])->first();
                 $item['image_full_url'] = $product?->image_full_url;
-                $item['images_full_url'] = $product->images_full_url;
+                $item['images_full_url'] = $product?->images_full_url;
             }else{
                $product = \App\Models\ItemCampaign::where(['id' => $item['item_details']['id']])->first();
                 $item['image_full_url'] = $product?->image_full_url;
@@ -2187,7 +2184,7 @@ class Helpers
                 if (!Storage::disk(self::getDisk())->exists($dir)) {
                     Storage::disk(self::getDisk())->makeDirectory($dir);
                 }
-                Storage::disk(self::getDisk())->putFileAs($dir, $image, $imageName);
+                Storage::disk(self::getDisk())->putFileAs($dir, $image, $imageName,['visibility' => 'public']);
             } else {
                 $imageName = 'def.png';
             }
@@ -4771,6 +4768,8 @@ class Helpers
         foreach ($sanitizedKeys as $key) {
             Cache::forget($key);
         }
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
     }
 
     public static function minDiscountCheck($productPrice, $discount)
@@ -4948,6 +4947,30 @@ class Helpers
         }
         return [ 'productWiseTax' => $productWiseTax?? false ,'categoryWiseTax'=> $categoryWiseTax?? false,  'taxVats' => $taxVats ?? []];
     }
+
+
+
+    public static function sendOrderDeliveryVerificationOtp($order){
+        if (self::getNotificationStatusData('customer', 'customer_delivery_verification_otp', 'sms_status') ) {
+                $published_status = 0;
+                $payment_published_status = config('get_payment_publish_status');
+                if (isset($payment_published_status[0]['is_published'])) {
+                    $published_status = $payment_published_status[0]['is_published'];
+                }
+                $address = json_decode($order->delivery_address, true);
+                $phone= $order->is_guest ?   data_get($address,'contact_person_number') :  $order?->customer?->phone;
+
+                if($published_status == 1){
+                    $response =  \Modules\Gateways\Traits\SmsGateway::send($phone,$order->otp);
+                }else{
+                    $response = SMS_module::send($phone,$order->otp);
+                }
+        }
+
+        return $response ?? null;
+    }
+
+
 
 }
 
